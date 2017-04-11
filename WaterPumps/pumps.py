@@ -3,12 +3,14 @@ import time
 
 class pump(object):
     """Pump oject"""
-    def __init__(self, powerPin):
+    def __init__(self, powerPin,startupTime=20):
         """Init a pump"""
         self.Power = machine.Pin(powerPin,machine.Pin.OUT)
         self.powerOnTime = 0
         self.flow = False
         self.ledColor = (True,False,True) #Blue
+        self.startupTime = startupTime
+        
         
     def pumpOn(self, statusLED):
         """Turn on Pump if off. print and return action proformed"""
@@ -39,12 +41,25 @@ class pump(object):
         print(msg)
         return msg
         
-    def calculateTimeOn(self):
+    def timeOn(self):
         TimeOn = time.time() - self.powerOnTime
         return TimeOn
-
-
-    def serverRequest(self, command):
-        """function to reform remote connection request and retrun status of command"""
-        statis = "hello"
-        return stats
+    
+    
+    def pumpStatus(self):
+        """check status of pump, and return test""" 
+        if self.Power.value():
+            msg = """Pump is on, running time: $s""" % (self.powerOnTime())
+        else:
+            msg = """Pump is off."""
+            
+            
+    def validCommandList(self):
+        """return a list of valid server commands. if a fuction not to be exposed to server don't list"""
+        return ['pumpOn', 'pumpOff', 'pumpStatus', 'timeOn']
+        
+        
+    #def serverRequest(self, command):
+    #    """function to reform remote connection request and retrun status of command"""
+    #    statis = "hello"
+    #    return stats
