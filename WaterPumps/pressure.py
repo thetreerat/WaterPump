@@ -27,7 +27,9 @@ class pressureSensor(object):
         p = p/3
         
         return p
-    
+
+        
+        
     def currentPSI(self):
         """read Avg valuse convert to psi and set self.PSI"""
         self.avgRaw = self.avgread()
