@@ -1,5 +1,6 @@
 import machine
 import time
+import uasyncio.core as asyncio
 
 class pump(object):
     """Pump oject"""
@@ -12,7 +13,7 @@ class pump(object):
         self.startupTime = startupTime
         
         
-    def pumpOn(self, statusLED):
+    async def pumpOn(self, statusLED):
         """Turn on Pump if off. print and return action proformed"""
         if not self.Power.value():
             self.Power.value(True)
@@ -25,9 +26,10 @@ class pump(object):
             msg = """pump is already on!"""
         print(msg)
         return msg
+        await asyncio.sleep_ms(50)
     
     
-    def pumpOff(self, statusLED):
+    async def pumpOff(self, statusLED):
         """Turn off pump if on. prints action proformed and return action as string"""
         print("""shuting down pump ...""")
         if self.Power.value():
@@ -40,26 +42,24 @@ class pump(object):
             msg = """Pump was slready off!"""
         print(msg)
         return msg
+        await asyncio.sleep_ms(50)
         
-    def timeOn(self):
+        
+    async def timeOn(self):
         TimeOn = time.time() - self.powerOnTime
         return TimeOn
+        await asyncio.sleep_ms(50)
     
     
-    def pumpStatus(self):
+    async def pumpStatus(self):
         """check status of pump, and return test""" 
         if self.Power.value():
             msg = """Pump is on, running time: $s""" % (self.powerOnTime())
         else:
             msg = """Pump is off."""
-            
+        await asyncio.sleep(1)    
             
     def validCommandList(self):
         """return a list of valid server commands. if a fuction not to be exposed to server don't list"""
         return ['pumpOn', 'pumpOff', 'pumpStatus', 'timeOn']
         
-        
-    #def serverRequest(self, command):
-    #    """function to reform remote connection request and retrun status of command"""
-    #    statis = "hello"
-    #    return stats

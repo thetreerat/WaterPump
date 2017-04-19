@@ -1,3 +1,6 @@
+# Author: Harold Clark
+# Copyright Harold Clark 2017
+#
 import machine
 import time
 
