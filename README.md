@@ -8,6 +8,8 @@ all in devolpement and not considered stable yet.
 ## uasync.core
 This project is in the process implementing asyncio and coroutines. Example_uasyncio/main.py is a example file that will implement one reley to contoller the pump, a button to turn on and off the pump, a tri led to give status of the pump. it also will read a 3 wire pressure sensor. 
 
+The simple server at this time will accept connections but not do andthing with them. 
+
 This code has only been tested with Adafruit Feather HUZZAH with ESP8266 WiFi.
 
 # Install Instructions
