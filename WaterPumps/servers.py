@@ -2,6 +2,7 @@ import network
 import time
 import socket
 import sys
+import uasyncio.core as asyncio
 
 class pumpServer(object):
     def __init__(self, port=8888, host='', connectionCount=5, validCommandList=['PumpOn']):
@@ -10,7 +11,6 @@ class pumpServer(object):
         self.host = host
         self.connectionCount = connectionCount
         self.socket = None
-        self.pumpServerStart()
         self.validCommandList = validCommandList
 
 
@@ -21,29 +21,31 @@ class pumpServer(object):
  
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print('Socket created')
- 
-        self.socket.bind((self.host, self.port))
+        self.socket.bind(('192.168.1.14',8888))
          
         print('Socket bind complete')
      
         self.socket.listen(self.connectionCount)
         print('Socket now listening')
         
-    def listenForConnection(self):
+    async def listenForConnection(self):
         #wait to accept a connection - blocking call
         c = pumpconnection(self.validCommandList)
         
-        c.conn, c.addr = self.socket.accept()     
+        c.conn, c.addr = self.socket.socket.accept()     
         print("""Connected with %s:%s""" % (c.addr[0], str(c.addr[1])))
-     
+        await asyncio.sleep_ms(50)
         #now keep talking with the client
-        c.data = str(c.conn.recv(512))
-        c.clean(c.data)
-        c.checkMessage(debug=True)        
-        c.conn.sendall(c.message)
-        print(c.message)
+        while c.cleanData=='Exit':
+            await asyncio.sleep_ms(50)
+            c.data = str(c.conn.recv(512))
+            c.clean(c.data)
+            c.checkMessage(debug=True)        
+            c.conn.sendall(c.message)
+            print(c.message)
         c.conn.close()
         #self.socket.close()
+        await asyncio.sleep_ms(50)
     
     
     def clearvalidCommandList(self):

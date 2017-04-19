@@ -19,9 +19,13 @@ from WaterPumps.pumps import pump
 from WaterPumps.leds import triLed
 from WaterPumps.pressure import pressureSensor
 from WaterPumps.buttons import button
+from WaterPumps.servers import pumpServer
+from WaterPumps.servers import pumpconnection
+
 import machine
 import time
 import os
+
 def cleanme(name='main.py'):
     if name in os.listdir():
         os.remove(name)
@@ -40,26 +44,25 @@ def cleanmodule(name):
     os.listdir()
     
 main_loop = asyncio.get_event_loop()
+#inialize Pump objects: buttons, leds,flowsensors,pressure sensors, server process
 mainPump = pump(powerPin=14)
 statusLed = triLed(redpin=13,bluepin=15,greenpin=12)
 powerButton = button(5,state=False)
-
-    
-async def trueTest(msg):
-    """test button add task function"""
-    print(msg)
-    await asyncio.sleep_ms(50)
-
+mainServer = pumpServer()
 mainpressure = pressureSensor(0,20,150,170)
 
-#from WaterPumps.pressure import pressureSensor
-#mainPressure = pressureSensor(pin=0)
-mainPump.pumpOn(statusLed)
-onMsg='Button is now on!'
-offMsg='Button is now off'
+#start the pump server process
+mainServer.pumpServerStart()
+
+#load functions into button action methods
 powerButton.onFunc(mainPump.pumpOn,[statusLed])
 powerButton.offFunc(mainPump.pumpOff,[statusLed])
+
+#Load tasks in to Loop
 main_loop.create_task(mainpressure.CheckPressure(mainPump,statusLed))
 main_loop.create_task(powerButton.checkButton())
+#main_loop.create_task(mainServer.listenForConnection())
+
+#start main loop
 main_loop.run_forever()
 
