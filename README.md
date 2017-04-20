@@ -16,8 +16,8 @@ This code has only been tested with Adafruit Feather HUZZAH with ESP8266 WiFi.
 must load the micropython libary "micropython-uasyncio.core", and be running 1.8.5 or later
 to install uasyncio.core form the board:
 ```python
-      import upip
-      upip.install("micropython-uasyncio.core")  # this fails with 8m of flash size 
+import upip
+upip.install("micropython-uasyncio.core")  # this fails with 8m of flash size 
 ```
 if running a Adafruit Feather HUZZAH with ESP8266 WiFi make sure to alicate more then 8M of the flash
 original how to remcommend a flash_size=8m this is to small for this example use something like this:
