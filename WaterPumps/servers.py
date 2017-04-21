@@ -12,6 +12,7 @@ class pumpServer(object):
         self.connectionCount = connectionCount
         self.socket = None
         self.validCommandList = validCommandList
+        self.ver = '0.9'
 
 
     def pumpServerStart(self):  
@@ -105,18 +106,7 @@ class pumpconnection(object):
         self.message = """%s\r\n""" % (self.message)    
     
 
-    def holdstuff(self):
-        if cleandata=='pump_status':
-            status = pumpStatus()
-        elif cleandata=='pump_on':
-            if not pumpPower.value():
-                changePumpPower()    
-                status = 'starting pump ...\n'
-            else:
-                status = 'pump is already on!\n'
-        elif cleandata=='pump_off':
-            if pumpPower.value():
-                changePumpPower()
-                status = "shuting down pump ...\n"
-            else:
-                status = "pump was already off!\n"
+class pumpserverfuture(object):
+    def __init__(self):
+        self.result = None
+        

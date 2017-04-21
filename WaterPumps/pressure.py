@@ -12,6 +12,7 @@ class pressureSensor(object):
         self.pressure = machine.ADC(pin)
         self.avgRaw = self.avgread()
         self.psi = self.convertValue(self.avgRaw)
+        self.maxPsi = 0
         self.lowPressure = 20
         self.highPressure = 150
         self.cutoffPressure = 170
@@ -45,6 +46,8 @@ class pressureSensor(object):
         """check values and print warning if needed"""
         while True:
             psi = self.currentPSI()
+            if psi>self.maxPsi:
+                self.maxPsi = psi                
             if psi<self.lowPressure and self.lastPSI!=psi:
                 print("""Low Pressure warning: %s""" % (psi))
             elif psi>self.highPressure and psi<self.cutoffPressure:
@@ -66,4 +69,8 @@ class pressureSensor(object):
            no pressure on the sensor as it will adjust what is a 0 psi reading"""
         self.sensorLowCorrection = round(self.avgread())
         print("""sensorLowCorrection set to %s""" % (self.sensorLowCorrection))
+    
+    def validCommandList(self):
+        """return a list of valid server commands. if a fuction not to be exposed to server don't list"""
+        return ['CalibrateSensor', 'currentPSI'] # MaxPSI
         
