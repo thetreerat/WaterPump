@@ -1,27 +1,30 @@
 import machine
 import time
 import uasyncio.core as asyncio
+from WaterPumps.server_uasyncio import validCommand
 
 class pump(object):
     """Pump oject"""
-    def __init__(self, powerPin,startupTime=20):
+    def __init__(self, powerPin,startupTime=20, statusLED=False):
         """Init a pump"""
         self.Power = machine.Pin(powerPin,machine.Pin.OUT)
         self.powerOnTime = 0
         self.flow = False
         self.ledColor = (True,False,True) #Blue
+        self.statusLED = statusLED
         self.startupTime = startupTime
         
         
-    async def pumpOn(self, statusLED):
+    async def pumpOn(self):
         """Turn on Pump if off. print and return action proformed"""
         if not self.Power.value():
             self.Power.value(True)
             msg = """Pump Turned On"""
             
             self.powerOnTime = time.time()
-            self.ledColor = (False,False,False) # White
-            statusLED.setColor(self.ledColor)
+            if self.statusLED:
+                self.ledColor = (False,False,False) # White
+                statusLED.setColor(self.ledColor)
         else:
             msg = """pump is already on!"""
         print(msg)
@@ -29,17 +32,18 @@ class pump(object):
         await asyncio.sleep_ms(50)
     
     
-    async def pumpOff(self, statusLED):
+    async def pumpOff(self):
         """Turn off pump if on. prints action proformed and return action as string"""
         print("""shuting down pump ...""")
         if self.Power.value():
             self.Power.value(False)
             msg ="""Pump Turned off"""
             self.powerOnTime = 0
-            self.ledColor = (True, False, True)
-            statusLED.setColor(self.ledColor)
+            if self.statusLED:
+                self.ledColor = (True, False, True)
+                self.statusLED.setColor(self.ledColor)
         else:
-            msg = """Pump was slready off!"""
+            msg = """Pump was already off!"""
         print(msg)
         return msg
         await asyncio.sleep_ms(50)
@@ -61,5 +65,14 @@ class pump(object):
             
     def validCommandList(self):
         """return a list of valid server commands. if a fuction not to be exposed to server don't list"""
-        return ['pumpOn', 'pumpOff', 'pumpStatus', 'timeOn']
+        list = []
+        b = validCommand('pumpOn',self.pumpOn)
+        list.append(b)
+        b = validCommand('pumpOff',self.pumpOff)
+        list.append(b)
+        b = validCommand('pumpStaus',self.pumpStatus)
+        list.append(b)
+        b = validCommand('timeOn',self.timeOn) 
+        list.append(b)
+        return list
         

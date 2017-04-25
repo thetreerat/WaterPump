@@ -21,6 +21,7 @@ from WaterPumps.leds import triLed
 from WaterPumps.pressure import pressureSensor
 from WaterPumps.buttons import button
 from WaterPumps.server_uasyncio import pumpServer
+
 import logging
 from install_waterpump import waterpumpinstall
 #from WaterPumps.servers import pumpServer
@@ -30,30 +31,6 @@ import machine
 import time
 import os
 
-@asyncio.coroutine
-def pserver(reader, writer, args=[]):
-    """coroutine for reading server requests"""
-    print(reader, writer)
-    print("================")
-    while True:
-        command = yield from reader.read()
-        validCommandList = args['validCommandList']
-        print(command)
-        command = str(command)[2:-5]
-        msg = ''
-        if command in validCommandList:
-            msg = "Hit\n\r"
-        elif command=='exit':
-            msg = "bye\n\r"
-        else:
-            msg = "Invalid Code\n\r"
-        print(msg)
-        yield from writer.awrite(msg)
-        print("After response write")
-        if command=='exit':
-            break
-    yield from writer.aclose()
-    print("Finished processing request")  
 
 
 #helper for cleaning and moving waterpump modules
@@ -84,10 +61,9 @@ mainServer.setvalidCommandList(mainPump.validCommandList())
 
 
 #Load buttons,pressures,server in to Loop
-args = {'validCommandList':mainServer.validCommandList}
 main_loop.create_task(mainpressure.CheckPressure(mainPump,statusLed))
 main_loop.create_task(powerButton.checkButton())
-main_loop.create_task(asyncio.start_server(pserver, mainServer.host, mainServer.port, args))
+main_loop.create_task(asyncio.start_server(mainServer.pserver, mainServer.host, mainServer.port))
 
 #main_loop.create_task(mainServer.listenForConnection())
 

@@ -28,15 +28,21 @@ class waterpumpinstall(object):
     def installWaterPumps():
         """method for install or updating waterpumps. copies modules for root to WaterPumps forlder"""
         missingfiles = []
-        if not 'WaterPumps' in os.listdir():
-            os.mkdir('WaterPumps')
-            if not 'WaterPumps' in sys.path:
-                sys.path.append('WaterPumps')
-        else:
-            print('WaterPumps exists')
-        #rootFiles = os.listdir()
+        dirlist = ['lib','WaterPumps']
+        for d in dirlist:
+            if not d in os.listdir():
+                os.mkdir(d)
+                print('''Added folder %s''' % (d))
+                if not d in sys.path:
+                    sys.path.append('WaterPumps')
+                    print('''Added %s to path''' % (d))
+            else:
+                print('''%s exists''' % (d))
         files = ['__init__.py',
-                'pumps.py',
+                 'core.py']
+        copylist(files,'lib/uasyncio/__init__.py')
+        
+        files = ['pumps.py',
                 'servers.py',
                 'flowMeters.py',
                 'buttons.py',
@@ -44,14 +50,17 @@ class waterpumpinstall(object):
                 'wifi.py',
                 'server_uasyncio.py',
                 'pressure.py']
+        copylist(files,'WaterPumps/')
+
+    def copylist(self,files,dest):
         for f in files:
             try:
-                os.rename(f, '/WaterPumps/' + f)
-                print('''found %s moved.''' % (f))
+                os.rename(f, dest + f)
+                print('''found %s moved to %s.''' % (f,dest))
             except OSError:
                 missingfiles.append(f)
                 #print('Error with file %s' % (f))
         if not missingfiles==[]:
             print('files missing: ')
             for f in missingfiles:
-                print(f)
+                print(f)        
