@@ -1,17 +1,17 @@
 # Author: Harold Clark
 # Copyright Harold Clark 2017
 #
-import machine
-
 class led(object):
     def __init__(self,ledPin=0):
         """Init a single color led object"""
+        import machine
         self.powerPin = machine.Pin(ledPin, machine.Pin.OUT)
 
 
 class triLed(object):
     def __init__(self, redpin, bluepin, greenpin):
         """Init a Tri color led object"""
+        import machine
         self.redPin = machine.Pin(redpin, machine.Pin.OUT)
         self.bluePin = machine.Pin(bluepin, machine.Pin.OUT)
         self.greenPin = machine.Pin(greenpin, machine.Pin.OUT)

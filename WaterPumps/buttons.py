@@ -1,11 +1,12 @@
-import machine
-import uasyncio.core as asyncio
-import time
-
+# Author: Harold Clark
+# Copyright Harold Clark 2017
+#
 class button(object):
     debounce_ms = 50
     def __init__(self, pin, state=False):
         """ init a button  object"""
+        import machine
+        from WaterPumps.server_uasyncio import Event
         self.pin = machine.Pin(pin, machine.Pin.IN, machine.Pin.PULL_UP)
         self.state = state
         self.buttonState = False
@@ -13,6 +14,7 @@ class button(object):
         self._onArgs = False
         self._offFunc = False
         self._offArgs = False
+        self.event = Event()
         
         
     def onFunc(self, func, args=()):
@@ -29,16 +31,18 @@ class button(object):
         
     def addTasktoLoop(self, func, args):
         """add a func to main loop"""
-        buttonTask = func(*args)
+        import uasyncio as asyncio
+        buttonTask = func(self.event)
         mainLoop = asyncio.get_event_loop()
         mainLoop.create_task(buttonTask)
         
 
     async def checkButton(self, debug=False):
         """async coroutine to check state of button"""
+        import uasyncio as asyncio
         while True:
             if not self.pin.value():
-                if debug==True:
+                if debug:
                     print("Button Pressed currently!!")
                 if not self.state and not self.buttonState:
                     if debug:
@@ -58,8 +62,12 @@ class button(object):
                 self.toggleState()
             else:
                 self.buttonState = False
+            if self.event.is_set():
+                print(self.value())
+                self.event.clear()
             await asyncio.sleep_ms(button.debounce_ms)
-    
+            
+                
     
     def toggleState(self, debug=False):
         """Toggle state"""

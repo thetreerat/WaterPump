@@ -1,12 +1,13 @@
 # Author: Harold Clark
 # Copyright Harold Clark 2017
 #
-import uasyncio as asyncio
+import uasyncio.core as asyncio
 
 class pumpServer(object):
     """Class for pumpserver using uasyncio"""
     def __init__(self, host='', port=8888):
         """initilzed the pump server class """
+        import machine
         self.serverName = 'Test Server'
         self.host = host
         self.port = port
@@ -43,11 +44,11 @@ class pumpServer(object):
         msg = "bad no coro"
         for c in self.validCommands:
             if c.name==command:        
-                pservertask = c.commandCoro()
+                pservertask = c.commandCoro(event)
                 mainLoop = asyncio.get_event_loop()
-                print(buttonTask)
-                mainLoop.create_task(buttonTask)
-                event.set('Done')
+                print(pservertask)
+                mainLoop.create_task(pservertask)
+                
         return msg
     
     
@@ -79,7 +80,7 @@ help - this info\n\r""" % (self.serverName,
             if command in self.validCommandList():
                 self.addTasktoLoop(command, CommandDataEvent)
                 await CommandDataEvent
-                msg = ComandDateEvent.value()
+                msg = CommandDataEvent.value()
                 CommandDataEvent.clear()
             elif command=='help':
                 msg = self.pserverHelp()

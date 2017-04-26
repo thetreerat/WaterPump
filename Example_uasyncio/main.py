@@ -21,9 +21,10 @@ from WaterPumps.leds import triLed
 from WaterPumps.pressure import pressureSensor
 from WaterPumps.buttons import button
 from WaterPumps.server_uasyncio import pumpServer
+from WaterPumps.server_uasyncio import validCommand
 
 import logging
-from install_waterpump import waterpumpinstall
+#from install_waterpump import waterpumpinstall
 #from WaterPumps.servers import pumpServer
 #from WaterPumps.servers import pumpconnection
 
@@ -34,7 +35,7 @@ import os
 
 
 #helper for cleaning and moving waterpump modules
-i = waterpumpinstall
+#i = waterpumpinstall
 
 #set logging level, options: CRITICAL,ERROR,WARNING,INFO,DEBUG - listed least to most
 logging.basicConfig(level=logging.DEBUG)
