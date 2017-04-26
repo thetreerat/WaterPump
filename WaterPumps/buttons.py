@@ -63,7 +63,7 @@ class button(object):
             else:
                 self.buttonState = False
             if self.event.is_set():
-                print(self.value())
+                print(self.event.value())
                 self.event.clear()
             await asyncio.sleep_ms(button.debounce_ms)
             

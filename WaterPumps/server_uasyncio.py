@@ -39,16 +39,18 @@ class pumpServer(object):
         self.clearvalidCommandList()
         self.appendvalidCommandlist(commands)
                 
-    def addTasktoLoop(self, command, event):
+    def addTasktoLoop(self, command, event, debug=True):
         """add a func to main loop"""
         msg = "bad no coro"
         for c in self.validCommands:
             if c.name==command:        
                 pservertask = c.commandCoro(event)
                 mainLoop = asyncio.get_event_loop()
-                print(pservertask)
+                if debug:
+                    print("""Loaded task: %s as handle %s""" % (c.name, pservertask))
                 mainLoop.create_task(pservertask)
-                
+                msg c.commandCoro
+                return msg                
         return msg
     
     

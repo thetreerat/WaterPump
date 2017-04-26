@@ -72,5 +72,6 @@ class pressureSensor(object):
     
     def validCommandList(self):
         """return a list of valid server commands. if a fuction not to be exposed to server don't list"""
+        
         return ['CalibrateSensor', 'currentPSI'] # MaxPSI
         
