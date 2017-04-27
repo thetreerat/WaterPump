@@ -22,6 +22,7 @@ from WaterPumps.pressure import pressureSensor
 from WaterPumps.buttons import button
 from WaterPumps.server_uasyncio import pumpServer
 from WaterPumps.server_uasyncio import validCommand
+from WaterPumps.flowMeters import flowMeter
 
 import logging
 #from install_waterpump import waterpumpinstall
@@ -32,6 +33,13 @@ import machine
 import time
 import os
 
+flowCount = 0
+
+def callbackflow(p):
+    """Add on to Counter """
+    global flowCount
+    flowCount += 1
+    print("""callback count: %s""" % (flowCount))
 
 
 #helper for cleaning and moving waterpump modules
@@ -49,9 +57,11 @@ statusLed = triLed(redpin=13,bluepin=15,greenpin=12)
 powerButton = button(5,state=False)
 mainServer = pumpServer(host='192.168.1.14')
 mainpressure = pressureSensor(0,20,150,170)
+mainFlowMeter = flowMeter(flowPin=4, rate=4.8)
 
-#start the pump server process
-#mainServer.pumpServerStart()
+#add mainPump, statusLED object pointer to pressuresensor
+mainpressure.pump = mainPump
+mainpressure.statusLED = statusLed
 
 #load functions into button action methods
 powerButton.onFunc(mainPump.pumpOn,[statusLed])
@@ -59,10 +69,14 @@ powerButton.offFunc(mainPump.pumpOff,[statusLed])
 
 #register validCommandlists into mainServer
 mainServer.setvalidCommandList(mainPump.validCommandList())
+mainServer.appendvalidCommandlist(mainpressure.validCommandList())
 
+#register callback for flowmeter
+mainFlowMeter.counterPin.irq(trigger=mainFlowMeter.counterPin.IRQ_RISING, handler=callbackflow)
 
 #Load buttons,pressures,server in to Loop
-main_loop.create_task(mainpressure.CheckPressure(mainPump,statusLed))
+main_loop.create_task(mainFlowMeter.monitorFlowMeter(flowCount))
+main_loop.create_task(mainpressure.MonitorPressure())
 main_loop.create_task(powerButton.checkButton())
 main_loop.create_task(asyncio.start_server(mainServer.pserver, mainServer.host, mainServer.port))
 

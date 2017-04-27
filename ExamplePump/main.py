@@ -30,11 +30,8 @@ def callbackButton(p):
 
 def callbackflow(p):
     """Add on to Counter """
-    #print("count")
     global flowCount
     flowCount += 1
-    #print("""flowcount""")
-    #print(flowCount)
 loopCount = 0
 
 

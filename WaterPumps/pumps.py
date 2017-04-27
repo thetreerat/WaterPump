@@ -22,8 +22,7 @@ class pump(object):
             
             self.powerOnTime = time.time()
             if self.statusLED:
-                self.ledColor = (False,False,False) # White
-                statusLED.setColor(self.ledColor)
+                self.statusLED.setYellow()
         else:
             msg = """pump is already on!"""
         print(msg)
@@ -40,7 +39,7 @@ class pump(object):
             msg ="""Pump Turned off"""
             self.powerOnTime = False
             if self.statusLED:
-                self.ledColor = (True, False, True)
+                self.makeBlue()
                 self.statusLED.setColor(self.ledColor)
         else:
             msg = """Pump was already off!"""
@@ -55,18 +54,20 @@ class pump(object):
         if self.powerOnTime:
             TimeOn = str(time.time() - self.powerOnTime)
         else:
-            TimeOn = 'Off'
+            TimeOn = 'Pump is Off'
         event.set(TimeOn)
         return TimeOn
         await asyncio.sleep_ms(50)
     
     
-    async def pumpStatus(self):
-        """check status of pump, and return test""" 
+    async def pumpStatus(self,event):
+        """check status of pump, and return test"""
+        from WaterPumps.server_uasyncio import Event
         if self.Power.value():
-            msg = """Pump is on, running time: $s""" % (self.powerOnTime())
+            msg = """Pump is on, running time: %s""" % (self.powerOnTime())
         else:
             msg = """Pump is off."""
+        event.set(msg)
         await asyncio.sleep(1)    
             
     def validCommandList(self):
@@ -76,7 +77,7 @@ class pump(object):
         list.append(b)
         b = validCommand('pumpOff',self.pumpOff)
         list.append(b)
-        b = validCommand('pumpStaus',self.pumpStatus)
+        b = validCommand('pumpStatus',self.pumpStatus)
         list.append(b)
         b = validCommand('timeOn',self.timeOn) 
         list.append(b)

@@ -9,6 +9,8 @@ class pressureSensor(object):
     """ Class for pressure sensor """
     def __init__(self, pin=0, LowPressure=20, highPressure=150, cutoffPressure=170):
         """init a pressure sensor on pin x"""
+        from WaterPumps.server_uasyncio import Event
+        self.name = 'PressureSensor'
         self.pressure = machine.ADC(pin)
         self.avgRaw = self.avgread()
         self.psi = self.convertValue(self.avgRaw)
@@ -19,6 +21,10 @@ class pressureSensor(object):
         self.sensorLowCorrection = 101
         self.ADCPressureConstence = .1708
         self.lastPSI = 0
+        self.pump = False
+        self.statusLED = False
+        self.event = Event()
+
     
 
     def avgread(self):
@@ -33,8 +39,18 @@ class pressureSensor(object):
         
         return p
     
+    
+    async def checkPressure(self, event, debug=True):
+        msg = self.readPressure()
+        event.set(msg)
+        if debug:
+            print("""checkPressure msg: %s """ %(msg))
+        await asyncio.sleep(4)
+        
+    
+    
     def currentPSI(self):
-        """read Avg valuse convert to psi and set self.PSI"""
+        """read Avg valuse convert to psi and set self.PSI and event data"""
         self.avgRaw = self.avgread()
         self.psi = self.convertValue(self.avgRaw)
         if self.psi < 0:
@@ -42,36 +58,61 @@ class pressureSensor(object):
         return self.psi
 
 
-    async def CheckPressure(self, pump, statusLED):
+    def readPressure(self):
+        msg = 'not read'
+        psi = self.currentPSI()
+        if psi>self.maxPsi:
+            self.maxPsi = psi                
+        if psi<self.lowPressure and self.lastPSI!=psi:
+            msg = """Low Pressure warning: %s""" % (psi)
+        elif psi>self.highPressure and psi<self.cutoffPressure:
+            msg = """High Pressure warning: %s""" % (psi)
+        elif psi>self.cutoffPressure:
+            msg = """Dangerous Pressure: %s, Shut Down Pump!!!""" % (psi)
+            if self.pump:
+                msg = """Shutdown pump, Pressure over uppper limit: %s""" % (psi)
+                self.pump.pumpOff(self.statusLED)
+            if self.statusLED:
+                self.statusLED.makeRed()
+        else:
+            msg = """%s reading: %s""" % (self.name, psi)
+        self.lastPSI = psi            
+        return msg
+    
+    async def MonitorPressure(self, event=False):
         """check values and print warning if needed"""
+        if not event:
+            event = self.event
         while True:
-            psi = self.currentPSI()
-            if psi>self.maxPsi:
-                self.maxPsi = psi                
-            if psi<self.lowPressure and self.lastPSI!=psi:
-                print("""Low Pressure warning: %s""" % (psi))
-            elif psi>self.highPressure and psi<self.cutoffPressure:
-                print("""High Pressure warning: %s""" % (psi))
-            elif psi>self.cutoffPressure:
-                print("""Danguras Pressure Warning, Shut Down Pump!!!""")
-                pump.pumpOff(statusLED)
-            self.lastPSI = psi
-            print(self.lastPSI)
-            await asyncio.sleep(4)
+            msg = False
+            if self.pump:
+                if self.pump.Power.value():
+                    msg = self.readPressure()
+            else:
+                msg = self.readPressure()
+            if msg:
+                print(msg)
+            await asyncio.sleep(2)
     
     def convertValue(self, v):
         """ convert value to PSI """
         psi = round((v - 101) * .1708)
         return psi
     
-    def CalibrateSensor(self):
+    def CalibrateSensor(self, event):
         """This sets the sensorLowCorrection value, this should only be run when there is
            no pressure on the sensor as it will adjust what is a 0 psi reading"""
         self.sensorLowCorrection = round(self.avgread())
-        print("""sensorLowCorrection set to %s""" % (self.sensorLowCorrection))
-    
+        event.set("""sensorLowCorrection set to %s""" % (self.sensorLowCorrection))
+        print(event.value())
+        
+        
     def validCommandList(self):
         """return a list of valid server commands. if a fuction not to be exposed to server don't list"""
-        
-        return ['CalibrateSensor', 'currentPSI'] # MaxPSI
+        from WaterPumps.server_uasyncio import validCommand
+        list = []
+        list.append(validCommand('CalibrateSensor',self.CalibrateSensor))
+        list.append(validCommand('checkPressure',self.checkPressure))
+        return list
+        #[, 'currentPSI'] # MaxPSI
         

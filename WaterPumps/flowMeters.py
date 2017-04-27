@@ -3,6 +3,7 @@
 #
 import machine
 import time
+import uasyncio.core as asyncio
 
 class flowMeter(object):
     def __init__(self, flowPin, flowCount=0, rate=7.5):
@@ -17,6 +18,7 @@ class flowMeter(object):
         self.currentFlow = 0
         self.flowRate = 0
         self.gallonLiter = 0.264172
+        
         
     def timeInMillaseconds(self):
         timevalue = int(time.time())
@@ -50,7 +52,28 @@ class flowMeter(object):
             print("end debug message")
         return Hz
         #self.currenttime = self.timeInMillaseconds()
+
+
+    def validCommandList(self):
+        """return a list of valid server commands. if a fuction not to be exposed to server don't list"""
+        list = []
+        list.append(validCommand('calculateflow',self.calculateflow))
+        return list
         
+    
+    async def monitorFlowMeter(self, count):
+        """coroutine for monitoring flow"""
+        
+        while True:
+            #if flowCount>0:
+            #    self.setFlowCount(flowCount)
+            #    flowCount = 0
+            #    Hz = self.calculateflow()
+            #    totalseconds = time.time() - self.flowStartTime
+            #    totalliters = self.totalFlowCount/450
+            
+            print("""MonitroFlowMeter count: %s""" % (count))
+            await asyncio.sleep(2)
         
 class flowRunData(object):
     """Class for create object to store Data"""

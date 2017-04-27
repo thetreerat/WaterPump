@@ -64,19 +64,38 @@ class waterpumpinstall(object):
             print('files missing: ')
             for f in missingfiles:
                 print(f)
-    def upip_uasync(self):
+    def installNetwork(self):
         import network
-        import upip
         import time
         n = network.WLAN(network.STA_IF)
         n.active(True)
         n.connect('lakenet', 'keem34&2')
-        time.sleep(5)
-        upip.install('micropython-uasyncio.core')
+
+    
+    
+    def upip_uasync(self):
+        import os
+        import upip
+        if not 'lib' in os.listdir():
+            upip.install('micropython-uasyncio.core')
+
 
 if __name__ == "__main__":
     c = waterpumpinstall()
-    
-    c.upip_uasync()
-        
+    import network
+    import machine
+    import sys
+    import os
+    n = network.WLAN(network.STA_IF)
+    if n.active():
+        print('installing uasyncio')
+        c.upip_uasync()
+        print('renameing main')
+        os.rename('main.py', 'install.py')
+    else:
+        print('installing network')
+        installNetwork()
+        print('restarting controller in 10 seconds')
+        sleep(10)
+        machine.reset()
         

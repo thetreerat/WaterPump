@@ -49,7 +49,7 @@ class pumpServer(object):
                 if debug:
                     print("""Loaded task: %s as handle %s""" % (c.name, pservertask))
                 mainLoop.create_task(pservertask)
-                msg c.commandCoro
+                msg = c.commandCoro
                 return msg                
         return msg
     
@@ -68,6 +68,11 @@ help - this info\n\r""" % (self.serverName,
             msg = msg +  c + '\n\r'
         return msg
     
+    def telnetPrint(self, msg):
+        """function for converting message from moduole to telnet happy strings"""
+        msg = """%s\n\r""" % (msg)
+        return msg
+    
     
     @asyncio.coroutine
     def pserver(self, reader, writer):
@@ -82,8 +87,9 @@ help - this info\n\r""" % (self.serverName,
             if command in self.validCommandList():
                 self.addTasktoLoop(command, CommandDataEvent)
                 await CommandDataEvent
-                msg = CommandDataEvent.value()
+                msg = self.telnetPrint(CommandDataEvent.value())
                 CommandDataEvent.clear()
+                
             elif command=='help':
                 msg = self.pserverHelp()
             elif command=='list':
