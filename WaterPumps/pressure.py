@@ -41,10 +41,9 @@ class pressureSensor(object):
     
     
     async def checkPressure(self, event, debug=True):
-        msg = self.readPressure()
-        event.set(msg)
+        event.set(self.readPressure())
         if debug:
-            print("""checkPressure msg: %s """ %(msg))
+            print("""checkPressure msg: %s """ % (event.value()))
         await asyncio.sleep(4)
         
     

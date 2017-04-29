@@ -5,6 +5,7 @@ class pump(object):
     def __init__(self, powerPin,startupTime=20, statusLED=False):
         """Init a pump"""
         import machine
+        from WaterPumps.server_uasyncio import Event
         self.Power = machine.Pin(powerPin,machine.Pin.OUT)
         self.powerOnTime = False
         self.flow = False
@@ -13,6 +14,9 @@ class pump(object):
         self.startupTime = startupTime
         self.runList = []
         self.currentRun = False
+        self.pumpStartEvent = Event()
+        self.pumpFinishEvent = Event()
+        self.pumpOnEvent = Event()
         
         
     async def pumpOn(self, event):
@@ -21,11 +25,15 @@ class pump(object):
         from WaterPump.pumpRun import pumpRun
         if not self.Power.value():
             self.Power.value(True)
-            msg = """Pump Turned On"""
-            self.currentRun = pumpRun()
+            self.pumpOnEvent.set(True)
+            self.pumpFinishEvent.clear()
+            
             self.powerOnTime = time()
+            self.pumpStart.set(self.powerOnTime)
+            self.pumpStartupEvent.set(self.powerOnTime + self.startupTime)
             if self.statusLED:
                 self.statusLED.setYellow()
+            msg = """Pump Turned On"""
         else:
             msg = """pump is already on!"""
         print(msg)
@@ -40,17 +48,13 @@ class pump(object):
         print("""shuting down pump ...""")        
         if self.Power.value():
             self.Power.value(False)
-            self.currentRun.finish = time()
-            self.currnetRun.
-            
-            self.runlist.append(self.currentRun)
-            self.currentRun = None
-            msg ="""Pump Turned off"""
             self.powerOnTime = False
+            self.pumpFinishEvent.set(time())
+            self.pumpOnEvent.clear()
             if self.statusLED:
                 self.makeBlue()
                 self.statusLED.setColor(self.ledColor)
-            
+            msg ="""Pump Turned off"""
         else:
             msg = """Pump was already off!"""
         print(msg)
