@@ -11,16 +11,19 @@ class pump(object):
         self.ledColor = (True,False,True) #Blue
         self.statusLED = statusLED
         self.startupTime = startupTime
+        self.runList = []
+        self.currentRun = False
         
         
     async def pumpOn(self, event):
         """Turn on Pump if off. print and return action proformed"""
-        import time
+        from utime import time
+        from WaterPump.pumpRun import pumpRun
         if not self.Power.value():
             self.Power.value(True)
             msg = """Pump Turned On"""
-            
-            self.powerOnTime = time.time()
+            self.currentRun = pumpRun()
+            self.powerOnTime = time()
             if self.statusLED:
                 self.statusLED.setYellow()
         else:
@@ -33,14 +36,21 @@ class pump(object):
     
     async def pumpOff(self, event):
         """Turn off pump if on. prints action proformed and return action as string"""
-        print("""shuting down pump ...""")
+        from utime import time
+        print("""shuting down pump ...""")        
         if self.Power.value():
             self.Power.value(False)
+            self.currentRun.finish = time()
+            self.currnetRun.
+            
+            self.runlist.append(self.currentRun)
+            self.currentRun = None
             msg ="""Pump Turned off"""
             self.powerOnTime = False
             if self.statusLED:
                 self.makeBlue()
                 self.statusLED.setColor(self.ledColor)
+            
         else:
             msg = """Pump was already off!"""
         print(msg)

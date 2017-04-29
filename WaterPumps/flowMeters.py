@@ -61,9 +61,9 @@ class flowMeter(object):
         return list
         
     
-    async def monitorFlowMeter(self, count):
+    async def monitorFlowMeter(self):
         """coroutine for monitoring flow"""
-        
+        global flowCount 
         while True:
             #if flowCount>0:
             #    self.setFlowCount(flowCount)
@@ -72,9 +72,9 @@ class flowMeter(object):
             #    totalseconds = time.time() - self.flowStartTime
             #    totalliters = self.totalFlowCount/450
             
-            print("""MonitroFlowMeter count: %s""" % (count))
+            print("""MonitroFlowMeter count: %s""" % (flowCount))
             await asyncio.sleep(2)
-        
+
 class flowRunData(object):
     """Class for create object to store Data"""
     def __init__(self, clicks=450):

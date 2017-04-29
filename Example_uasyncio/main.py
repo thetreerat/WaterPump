@@ -25,13 +25,22 @@ from WaterPumps.server_uasyncio import validCommand
 from WaterPumps.flowMeters import flowMeter
 
 import logging
-#from install_waterpump import waterpumpinstall
-#from WaterPumps.servers import pumpServer
-#from WaterPumps.servers import pumpconnection
-
 import machine
 import time
 import os
+
+
+#set logging level, options: CRITICAL,ERROR,WARNING,INFO,DEBUG - listed least to most
+logging.basicConfig(level=logging.DEBUG)
+
+
+#inialize Pump objects: buttons, leds,flowsensors,pressure sensors, server process
+statusLed = triLed(redpin=13,bluepin=15,greenpin=12)
+mainPump = pump(powerPin=14)
+powerButton = button(5,state=False)
+mainServer = pumpServer(host='192.168.1.14')
+mainpressure = pressureSensor(0,20,150,170)
+mainFlowMeter = flowMeter(flowPin=4, rate=4.8)
 
 flowCount = 0
 
@@ -44,20 +53,6 @@ def callbackflow(p):
 
 #helper for cleaning and moving waterpump modules
 #i = waterpumpinstall
-
-#set logging level, options: CRITICAL,ERROR,WARNING,INFO,DEBUG - listed least to most
-logging.basicConfig(level=logging.DEBUG)
-
-#Get handle ofr event loop
-main_loop = asyncio.get_event_loop()
-
-#inialize Pump objects: buttons, leds,flowsensors,pressure sensors, server process
-mainPump = pump(powerPin=14)
-statusLed = triLed(redpin=13,bluepin=15,greenpin=12)
-powerButton = button(5,state=False)
-mainServer = pumpServer(host='192.168.1.14')
-mainpressure = pressureSensor(0,20,150,170)
-mainFlowMeter = flowMeter(flowPin=4, rate=4.8)
 
 #add mainPump, statusLED object pointer to pressuresensor
 mainpressure.pump = mainPump
@@ -74,8 +69,11 @@ mainServer.appendvalidCommandlist(mainpressure.validCommandList())
 #register callback for flowmeter
 mainFlowMeter.counterPin.irq(trigger=mainFlowMeter.counterPin.IRQ_RISING, handler=callbackflow)
 
+#Get handle for event loop
+main_loop = asyncio.get_event_loop()
+
 #Load buttons,pressures,server in to Loop
-main_loop.create_task(mainFlowMeter.monitorFlowMeter(flowCount))
+main_loop.create_task(mainFlowMeter.monitorFlowMeter())
 main_loop.create_task(mainpressure.MonitorPressure())
 main_loop.create_task(powerButton.checkButton())
 main_loop.create_task(asyncio.start_server(mainServer.pserver, mainServer.host, mainServer.port))

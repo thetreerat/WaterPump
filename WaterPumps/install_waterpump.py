@@ -1,5 +1,6 @@
-import os
-import sys
+#import os
+#import sys
+#import time
 class waterpumpinstall(object):
     def __init__(self):
         pass
@@ -83,19 +84,24 @@ class waterpumpinstall(object):
 if __name__ == "__main__":
     c = waterpumpinstall()
     import network
-    import machine
-    import sys
-    import os
     n = network.WLAN(network.STA_IF)
     if n.active():
         print('installing uasyncio')
         c.upip_uasync()
         print('renameing main')
+        import os
         os.rename('main.py', 'install.py')
+        os.listdir()
+        import time
+        time.sleep(10)
+        import machine
+        machine.reset()
     else:
+        import machine
+        import time
         print('installing network')
-        installNetwork()
+        c.installNetwork()
         print('restarting controller in 10 seconds')
-        sleep(10)
+        time.sleep(10)
         machine.reset()
         
