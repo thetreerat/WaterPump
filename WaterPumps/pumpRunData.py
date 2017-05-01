@@ -2,19 +2,13 @@
 # Copyright Harold Clark 2017
 #
 
-class pumpRun(object):
+class pumpRunData(object):
     def __init__(self):
         import time
         self.start = time.time()
         self.finish = False
         self.maxPSI = False
-        self.pumpedTotal = False
-    
-    
-    def pumpOff(self):
-        import time
-        self.finish = time.time()
-        
+        self.pumpedTotal = False        
         
     def totalRunTime(self):
         if self.finish:

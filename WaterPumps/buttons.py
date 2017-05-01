@@ -6,27 +6,11 @@ class button(object):
     def __init__(self, pin, state=False):
         """ init a button  object"""
         import machine
-        from WaterPumps.server_uasyncio import Event
+        #from WaterPumps.server_uasyncio import Event
         self.pin = machine.Pin(pin, machine.Pin.IN, machine.Pin.PULL_UP)
         self.state = state
         self.buttonState = False
-        self._onFunc = False
-        self._onArgs = False
-        self._offFunc = False
-        self._offArgs = False
-        self.event = Event()
-        
-        
-    def onFunc(self, func, args=()):
-        """Set func for false value of Pin"""
-        self._onFunc = func
-        self._onArgs = args
-    
-    
-    def offFunc(self, func, args=()):
-        """Set func for true value state of button"""
-        self._offFunc = func
-        self._offArgs = args
+        self.states = states()
         
         
     def addTasktoLoop(self, func, args):
@@ -36,46 +20,56 @@ class button(object):
         mainLoop = asyncio.get_event_loop()
         mainLoop.create_task(buttonTask)
         
-
-    async def checkButton(self, debug=False):
-        """async coroutine to check state of button"""
+    async def checkButton2(self, debug=False):
+        """async coroutine for check state of multiple state buttons"""
         import uasyncio as asyncio
+        self.state = self.states.nextState()
         while True:
             if not self.pin.value():
                 if debug:
                     print("Button Pressed currently!!")
-                if not self.state and not self.buttonState:
+                if not self.buttonState:
                     if debug:
-                        print("Button should go on soon!!")
-                    self.buttonState=True
-                    if self._onFunc:
-                        print("Load on func in to main loop")
-                        self.addTasktoLoop(self._onFunc,self._onArgs)
-                elif self.state and not self.buttonState:
-                    self.buttonState=True
+                        print('''Button state changed from %s''' % (self.state.state)):
+                    self.state = self.states.nextState()
                     if debug:
-                        print('Button should go off soon!!')
-                    if self._offFunc:
-                        if debug:
-                            print('Load off func in to main loop')
-                        self.addTasktoLoop(self._offFunc, self._offArgs)
-                self.toggleState()
+                        print('''Button State changed to %s''' % (self.state.state))
+                    is self.state.func:
+                        self.addTaskLoop(self.state.func, self.state.args)
+                    self.buttonState = True                    
             else:
                 self.buttonState = False
-            if self.event.is_set():
-                print(self.event.value())
-                self.event.clear()
-            await asyncio.sleep_ms(button.debounce_ms)
-            
-                
-    
-    def toggleState(self, debug=False):
-        """Toggle state"""
-        state = None
-        if self.state:
-            state=False
+        await asyncio.sleep_ms(button.debounce_ms)            
+                                
+
+class states(object):
+    """class for multiple state, not finished"""
+    def __init__(self, states=False):
+        """inilize states"""
+        import state
+        if states:
+            self.states = [state('Fasle'),state('True')]
         else:
-            state=True
+            self.states = states
+        
+    def nextState(self):
+        """Toggle state"""
+        state = states.pop()
+        states.insert(0,state)
+        return state
+    
+    
+    def setStates(self, newStateList):
+        """redefine state list"""
+        self.states = newStateList
+
+class state(object):
+    """class for a valid state"""
+    def __init__(self,state,func=None,args=False):
+        """Inilize class object"""
         self.state = state
-        if debug:
-            print(state)
+        self.func = func
+        if not args:
+            self.args = args
+        else:
+            self.args = []
