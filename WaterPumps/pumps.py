@@ -1,37 +1,43 @@
+# Author: Harold Clark
+# Copyright Harold Clark 2017
+#
 import uasyncio.core as asyncio
-from WaterPumps.server_uasyncio import validCommand
 
 class pump(object):
     def __init__(self, powerPin,startupTime=20, name='Pump'):
         """Init a pump"""
         import machine
-        from WaterPumps.server_uasyncio import Event
+        from WaterPumps.events import Event
         self.name = name
         self.Power = machine.Pin(powerPin,machine.Pin.OUT)
         self.startupTime = startupTime
         self.pumpClients = []
+        self.pumpServers = []
         self.pumpMonitorEvents = []
         self.currentRunData = False
         self.RunData = []
-        self.pumpNotReadyEvent()  = Event() # event for pump to know it okay to start
+        self.pumpNotReadyEvent = Event() # event for pump to know it okay to start
         self.pumpStartEvent = Event() # event for services that need to do some in the startup period
         self.pumpFinishEvent = Event() # event for service that need to supply data 
         self.pumpRunningEvent = Event() # subscriber event for pumpOn
         self.pumpOnEvent = Event() # cleint event, pumpOn ie button, server, upstream server
         self.pumpOffEvent = Event() # client event, pumpOff ie button, server, downstream
-        self.pumpOntimeEvent = Event() # client event, running time ie server
+        self.pumpTimeOnEvent = Event() # client event, running time ie server
+        self.pumpStatusEvent = Event()
         self.registerMonitorEvent(self.pumpOnEvent, self.pumpOn)
         self.registerMonitorEvent(self.pumpOffEvent, self.pumpOff)
-        self.registerMonitorEvent(self.pumpOnTimeEvent, self.onTime)
+        self.registerMonitorEvent(self.pumpTimeOnEvent, self.timeOn)
         self.registerMonitorEvent(self.pumpStatusEvent, self.pumpStatus)
 
         
         
-    def pumpOn(self):
+    async def pumpOn(self, event):
         """Turn on Pump if off. print and return action proformed"""
+        await self.pumpNotReadyEvent
         from utime import time
         from WaterPump.pumpRunData import pumpRunData
-        if not self.Power.value() and not self.pumpNotReadyEvent.is_set():
+        if not self.Power.value():
+            self.pumpRunDate.append(self.currentRunDate)
             self.currentRunData = pumpRunData()
             self.Power.value(True)
             self.pumpRunningEvent.set(self.currentRunDate.start)
@@ -100,7 +106,7 @@ class pump(object):
         return list
         
         
-    def registerMonitorEvents(self, Event, func):
+    def registerMonitorEvent(self, Event, func):
         self.pumpMonitorEvents.append((Event, func))
         
         
@@ -109,20 +115,20 @@ class pump(object):
         self.pumpClient.append(name)
         return self.validCommandList()
     
-    def regisgterPumpServer(self, name):
-        self.pumpServer.append(name)
+    def registerPumpServer(self, name):
+        self.pumpServers.append(name)
         e = []
         e.append(('pumpStartEvent', self.pumpStartEvent))
         e.append(('pumpRunningEvent', self.pumpRunningEvent))
         e.append(('pumpFinishEvent', self.pumpFinishEvent))
-        e.append(('pumpNotReadyEvent'. self.pumpNotReadyEvent))
+        e.append(('pumpNotReadyEvent', self.pumpNotReadyEvent))
         return e
     
             
-    async def pumpMonitor(self):
+    async def monitorPump(self):
         """coroutine for handling pump requests"""
         while True:
-            for event, func in self.monitorEvents():
+            for event, func in self.pumpMonitorEvents:
                 await asyncio.sleep_ms(50) 
                 if event.is_set():
                     event.set(func())

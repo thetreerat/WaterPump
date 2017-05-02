@@ -4,8 +4,9 @@
 import machine
 import time
 import uasyncio.core as asyncio
-
+flowCount =0
 class flowMeter(object):
+
     def __init__(self, flowPin, flowCount=0, rate=7.5):
         """Init a Flow meter sensor object"""
         self.counterPin = machine.Pin(flowPin, machine.Pin.IN)
@@ -18,7 +19,7 @@ class flowMeter(object):
         self.currentFlow = 0
         self.flowRate = 0
         self.gallonLiter = 0.264172
-        
+
         
     def timeInMillaseconds(self):
         timevalue = int(time.time())
@@ -63,7 +64,8 @@ class flowMeter(object):
     
     async def monitorFlowMeter(self):
         """coroutine for monitoring flow"""
-        global flowCount 
+        global flowCount
+        flowCount += 1
         while True:
             #if flowCount>0:
             #    self.setFlowCount(flowCount)
@@ -104,4 +106,10 @@ class flowRunData(object):
     def averageFlowRate(self):
         """calculate average flow rate for the run"""
         return (self.clicksToLiters/self.totalRunTime)/60
+
+def callbackflow(p):
+    """Add on to Counter """
+    global flowCount
+    flowCount += 1    
+    print("""callback count: %s""" % (flowCount))        
         

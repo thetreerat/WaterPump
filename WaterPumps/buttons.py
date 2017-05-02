@@ -3,14 +3,19 @@
 #
 class button(object):
     debounce_ms = 50
-    def __init__(self, pin, state=False):
+    def __init__(self, pin, state=None):
         """ init a button  object"""
         import machine
+        import states
         #from WaterPumps.server_uasyncio import Event
         self.pin = machine.Pin(pin, machine.Pin.IN, machine.Pin.PULL_UP)
-        self.state = state
-        self.buttonState = False
         self.states = states()
+        if state==None:
+            self.state = self.states.nextState()
+        else:
+            self.state = state
+        self.buttonState = False
+        
         
         
     def addTasktoLoop(self, func, args):
@@ -20,7 +25,7 @@ class button(object):
         mainLoop = asyncio.get_event_loop()
         mainLoop.create_task(buttonTask)
         
-    async def checkButton2(self, debug=False):
+    async def monitorButton(self, debug=False):
         """async coroutine for check state of multiple state buttons"""
         import uasyncio as asyncio
         self.state = self.states.nextState()
@@ -35,7 +40,8 @@ class button(object):
                     if debug:
                         print('''Button State changed to %s''' % (self.state.state))
                     is self.state.func:
-                        self.addTaskLoop(self.state.func, self.state.args)
+                        #self.addTaskLoop(self.state.func, self.state.args)
+                        print('func is live')
                     self.buttonState = True                    
             else:
                 self.buttonState = False
