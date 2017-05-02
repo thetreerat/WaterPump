@@ -7,6 +7,7 @@ from WaterPumps.flowMeters import callbackflow
 from WaterPumps.pumps import pump
 from WaterPumps.leds import triLed
 from WaterPumps.buttons import button
+from WaterPumps.buttons import state
 import logging
 
 
@@ -20,6 +21,9 @@ statusLed.makeYellow()
 
 #inialize Pump objects: buttons, leds,flowsensors,pressure sensors, server process
 mainPump = pump(powerPin=14)
+
+states = [state('pumpOff', func=mainPump.pumpOffEvent)]
+states.append(state('pumpOn', func=mainPump.pumpOnEvent))
 powerButton = button(5,state=False)
 
 

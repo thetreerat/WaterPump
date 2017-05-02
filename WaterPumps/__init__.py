@@ -11,4 +11,5 @@ from WaterPumps.pressure import pressureSensor
 #from WaterPumps.servers import pumpServer
 from WaterPumps.server_uasyncio import pumpServer
 from WaterPumps.server_uasyncio import validCommand
+from WaterPumps.events import Event
 #from WaterPumps.wifi import wifiHelper

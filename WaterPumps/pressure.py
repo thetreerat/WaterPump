@@ -24,7 +24,6 @@ class pressureSensor(object):
         self.pump = False
         self.statusLED = False
         self.pressureHighEvent = Event()
-        self.
 
     
 

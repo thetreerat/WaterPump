@@ -6,7 +6,7 @@ class button(object):
     def __init__(self, pin, state=None):
         """ init a button  object"""
         import machine
-        import states
+        from WaterPumps.buttons import states 
         #from WaterPumps.server_uasyncio import Event
         self.pin = machine.Pin(pin, machine.Pin.IN, machine.Pin.PULL_UP)
         self.states = states()
@@ -25,7 +25,7 @@ class button(object):
         mainLoop = asyncio.get_event_loop()
         mainLoop.create_task(buttonTask)
         
-    async def monitorButton(self, debug=False):
+    async def monitorButton(self, debug=True):
         """async coroutine for check state of multiple state buttons"""
         import uasyncio as asyncio
         self.state = self.states.nextState()
@@ -35,11 +35,11 @@ class button(object):
                     print("Button Pressed currently!!")
                 if not self.buttonState:
                     if debug:
-                        print('''Button state changed from %s''' % (self.state.state)):
+                        print('''Button state changed from %s''' % (self.state.state))
                     self.state = self.states.nextState()
                     if debug:
                         print('''Button State changed to %s''' % (self.state.state))
-                    is self.state.func:
+                    if self.state.func:
                         #self.addTaskLoop(self.state.func, self.state.args)
                         print('func is live')
                     self.buttonState = True                    
@@ -52,16 +52,16 @@ class states(object):
     """class for multiple state, not finished"""
     def __init__(self, states=False):
         """inilize states"""
-        import state
+        from WaterPumps.buttons import state
         if states:
-            self.states = [state('Fasle'),state('True')]
-        else:
             self.states = states
+        else:
+            self.states = [state('Fasle'),state('True')]
         
     def nextState(self):
         """Toggle state"""
-        state = states.pop()
-        states.insert(0,state)
+        state = self.states.pop()
+        self.states.insert(0,state)
         return state
     
     
