@@ -4,20 +4,20 @@
 import uasyncio.core as asyncio
 class Event():
     """Class for Events"""
-    def __init__(self, lp=False, eventType=1):
+    def __init__(self, lp=False,name='Name not defined',debug=False):
         """Inilized the Class Event"""
+        self._name = name
         self.after = asyncio.sleep
-        self._eventType = eventType
         self.clear()
-        
+        self.debug = debug
         
     def clear(self):
-        """Clear the event if flag is 1 or type=1"""
-        if self._eventType==2 and self._flag>1:
-            self._flag -= 1    
-        else:
-            self._flag = False
-            self._data = None
+        """Clear the event if flag"""
+        if self.debug:
+            from utime import time
+            print('''%s - %s: clearing event''' % (self._name, time()))
+        self._flag = False
+        self._data = None
 
 
     def __await__(self):
@@ -34,10 +34,7 @@ class Event():
 
     def set(self, data=None):
         """Method for setting the event data, and flag"""
-        if self._eventType==2:
-            self._flag=data
-        else:
-            self._flag = True
+        self._flag = True
         self._data = data
 
 

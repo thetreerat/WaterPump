@@ -3,7 +3,7 @@
 #
 class button(object):
     debounce_ms = 50
-    def __init__(self, pin, state=None):
+    def __init__(self, pin, state=None, name='Test'):
         """ init a button  object"""
         import machine
         from WaterPumps.buttons import states 
@@ -15,6 +15,7 @@ class button(object):
         else:
             self.state = state
         self.buttonState = False
+        self._name = name
         
         
         
@@ -25,29 +26,43 @@ class button(object):
         mainLoop = asyncio.get_event_loop()
         mainLoop.create_task(buttonTask)
         
-    async def monitorButton(self, debug=True):
+    async def monitorButton(self, startState='pumpOff', debug=True):
         """async coroutine for check state of multiple state buttons"""
         import uasyncio as asyncio
-        self.state = self.states.nextState()
+        from utime import time
+        from WaterPumps.events import Event
+        #self.state = self.setCurrentState(startState)
+        print('''%s - %s: Monitor button start in state: %s''' % (self._name, time(),self.state.state))
+        pumpMessage = Event()
         while True:
             if not self.pin.value():
-                if debug:
-                    print("Button Pressed currently!!")
+                #if debug:
+                #    print("Button Pressed currently!!")
                 if not self.buttonState:
                     if debug:
                         print('''Button state changed from %s''' % (self.state.state))
                     self.state = self.states.nextState()
-                    if debug:
-                        print('''Button State changed to %s''' % (self.state.state))
-                    if self.state.func:
+                    if not self.state.event.is_set():
+                        self.state.event.set(pumpMessage)
+                        if debug:
+                            print('''Button State changed to %s''' % (self.state.state))
+                    else:
+                        print("""%s - %s: event was active, nothing will be done""" % (self._name, time()))
+                    if self.state.event.is_set():
                         #self.addTaskLoop(self.state.func, self.state.args)
-                        print('func is live')
+                        print('''%s - %s: Event is live''' % (self._name, time()))
                     self.buttonState = True                    
             else:
                 self.buttonState = False
-        await asyncio.sleep_ms(button.debounce_ms)            
+            if pumpMessage.is_set():
+                print(pumpMessage.value)
+                pumpMessage.clear()
+            await asyncio.sleep_ms(button.debounce_ms)            
                                 
-
+    def setCurrentState(self, state):
+        while self.state!=state:
+            self.state = self.states.nextState()
+            
 class states(object):
     """class for multiple state, not finished"""
     def __init__(self, states=False):
@@ -71,10 +86,10 @@ class states(object):
 
 class state(object):
     """class for a valid state"""
-    def __init__(self,state,func=None,args=False):
+    def __init__(self,state,event=None,args=False):
         """Inilize class object"""
         self.state = state
-        self.func = func
+        self.event = event
         if not args:
             self.args = args
         else:

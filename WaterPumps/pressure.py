@@ -9,7 +9,7 @@ class pressureSensor(object):
     """ Class for pressure sensor """
     def __init__(self, pin=0, LowPressure=20, highPressure=150, cutoffPressure=170):
         """init a pressure sensor on pin x"""
-        from WaterPumps.server_uasyncio import Event
+        from WaterPumps.events import Event
         self.name = 'PressureSensor'
         self.pressure = machine.ADC(pin)
         self.avgRaw = self.avgread()

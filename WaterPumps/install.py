@@ -20,11 +20,11 @@ class waterpumpinstall(object):
             upip.install('micropython-uasyncio.core')
             
             
-    def restart(self):
+    def restart(self, sec=4):
         from utime import sleep
         from machine import reset
-        print('rebooting in 10 seconds')
-        sleep(10)
+        print('''rebooting in %s seconds''' % (sec))
+        sleep(sec)
         reset()
 
 if __name__ == "__main__":
@@ -35,11 +35,15 @@ if __name__ == "__main__":
     if n.active():
         print('renameing main')
         import os
+        import sys
         os.rename('main.py', 'install.py')
-        os.rename('uasyncio.py', 'main.py')
-        os.listdir()
-        c.restart()
+        os.mkdir('lib')
+        os.mkdir('lib/uasyncio')
+        #sys.path.append('lib')
+        print(os.listdir())
+        print(sys.path)
+        c.restart(1)
     else:
         print('installing network')
         c.installNetwork()
-        c.restart()        
+        c.restart(5)        

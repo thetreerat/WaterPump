@@ -3,12 +3,20 @@
 #
 import machine
 import time
-import uasyncio.core as asyncio
+
+try:    
+    import uasyncio.core as asyncio
+except ImportError:
+    import lib.uasyncio.core as asyncio
+    
 flowCount =0
+from WaterPumps.events import Event
+
 class flowMeter(object):
 
-    def __init__(self, flowPin, flowCount=0, rate=7.5):
+    def __init__(self, flowPin, flowCount=0, rate=7.5, name='flowMeter'):
         """Init a Flow meter sensor object"""
+        self._name = name
         self.counterPin = machine.Pin(flowPin, machine.Pin.IN)
         self.flowCount = flowCount
         self.currentTime = self.timeInMillaseconds()
@@ -19,6 +27,10 @@ class flowMeter(object):
         self.currentFlow = 0
         self.flowRate = 0
         self.gallonLiter = 0.264172
+        self.noFlowEvent = Event(name='No Flow')
+        self.pumpFinishEvent = None
+        self.flowFinshData = Event()
+        self.RunningEvent = None
 
         
     def timeInMillaseconds(self):
@@ -40,7 +52,7 @@ class flowMeter(object):
         
     def calculateflow(self, debug=False):
         """Calucate the instatane flow"""
-        if self.timeDelta!=0:
+        if self.timeDelta()!=0:
             Hz = (self.flowCount/self.timeDelta())
         else:
             Hz = 0
@@ -62,19 +74,41 @@ class flowMeter(object):
         return list
         
     
-    async def monitorFlowMeter(self):
+    async def monitorFlowMeter(self, debug=False):
         """coroutine for monitoring flow"""
         global flowCount
+        self.noFlowEvent.clear()
         flowCount += 1
+        print('''%s -%s: Monitor of flow meter started''' % (self._name, time.time()))
+        if self.RunningEvent==None:
+            self.RunningEvent = Event()
+            self.RunningEvent.set()
         while True:
-            #if flowCount>0:
-            #    self.setFlowCount(flowCount)
-            #    flowCount = 0
-            #    Hz = self.calculateflow()
-            #    totalseconds = time.time() - self.flowStartTime
-            #    totalliters = self.totalFlowCount/450
+            if self.RunningEvent.is_set():
+                if flowCount>0:
+                    self.noFlowEvent.clear()
+                    self.setFlowCount(flowCount)
+                    flowCount = 0
+                    Hz = self.calculateflow()
+                    #totalseconds = time.time() - self.flowStartTime
+                    #totalliters = self.totalFlowCount/450
             
-            print("""MonitroFlowMeter count: %s""" % (flowCount))
+                    print("""%s - %s: %s LPM""" % (self._name, time.time(), self.flowRate))
+                else:
+                    if self.flowRate==0 and not self.noFlowEvent.is_set():
+                        self.noFlowEvent.set(time.time())
+                    if debug:
+                        print('''%s - %s: No flow - Event: %s value: %s''' % (self._name, time.time(), self.noFlowEvent._name, self.noFlowEvent.value()))
+            if self.pumpFinishEvent.is_set() and flowCount==0:
+                totalFlow = self.totalFlowCount / self.clicksToLiters
+                print('''%s - %s: Total Liters''' % (self._name,time.time(),totalFlow))
+                self.flowFinsishData.set(totalFlow)
+                self.totalFlowCount = 0
+            if debug:
+                if self.noFlowEvent==None:
+                    print('no pumpFinishEvent handle')
+                else:
+                    print('''%s - %s: Finish Event set: %s, value: %s''' % (self._name, time.time(), self.pumpFinishEvent.is_set(),self.pumpFinishEvent.value()))
             await asyncio.sleep(2)
 
 class flowRunData(object):
@@ -107,9 +141,10 @@ class flowRunData(object):
         """calculate average flow rate for the run"""
         return (self.clicksToLiters/self.totalRunTime)/60
 
-def callbackflow(p):
+def callbackflow(p, debug=False):
     """Add on to Counter """
     global flowCount
-    flowCount += 1    
-    print("""callback count: %s""" % (flowCount))        
+    flowCount += 1
+    if debug:
+        print("""callback count: %s""" % (flowCount))        
         
