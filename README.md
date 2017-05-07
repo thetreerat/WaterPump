@@ -28,21 +28,28 @@ example use something like this:
       esptool.py --port /path/to/port --baud 460800 write_flash --flash_size=32m 0 /path/to/image
 ``` 
 
-This libary uses  micropython libary "micropython-uasyncio.core", and your micropython board needs to
-be running 1.8.5 or later to install uasyncio.core form the board:
-```python
-import upip
-upip.install("micropython-uasyncio.core")  # this fails with 8m of flash size 
-```
+For more then about two modules to work you must byte freeze the code. Please see the tutoral from adafruit if you need help on craeting byte frozen code.
 
-I have modified the __init__.py from the micropython-uasyncio libary. This need to be copied from the
+https://learn.adafruit.com/micropython-basics-loading-modules/frozen-modules?view=all
 
-Waterpump/__init__.py to /lib/uasyncio/__init__.py
+# Modules list
 
-you next need to copy the modules from Waterpump/WaterPumps from this project to your board in
-WaterPumps/*. If you use the webrepl or ampy to copy all the files in the /WaterPumps
-folder to the root. you can run:
-```python
-     install_waterpump.py
-```
-This will create folder Waterpumps if it is not there and copy any of modules at root to the folder. 
+##Leds.py
+need text
+
+##pumps.py
+need text
+
+##flowMeters.py
+need text
+
+##pressure.py
+need text
+
+##buttons.py
+need text
+
+##server_asyncio.py
+need text
+
+
