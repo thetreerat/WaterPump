@@ -51,6 +51,9 @@ main_loop.create_task(mainPump.monitorPump(debug=False))
 main_loop.create_task(statusLed.monitorLED())
 main_loop.create_task(powerButton.monitorButton(startState='pumpOff'))
 
+# register pump run data source
+mainPump.registerFinishDataEvent(mainFlowMeter.flowFinishData, 'pumpedTotal')
+
 #finished loading turn led bluw
 statusLed.setColor(statusLed.LED_BLUE)
 mainFlowMeter.pumpFinishEvent = mainPump.pumpFinishEvent

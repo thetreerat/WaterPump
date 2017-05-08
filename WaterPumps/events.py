@@ -8,8 +8,9 @@ class Event():
         """Inilized the Class Event"""
         self._name = name
         self.after = asyncio.sleep
-        self.clear()
         self.debug = debug
+        self.clear()
+        
         
     def clear(self):
         """Clear the event if flag"""

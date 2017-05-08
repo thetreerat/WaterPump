@@ -65,7 +65,7 @@ class triLed(object):
                     if self.lastColor!=color:
                         self.lastColor = color
                         mainLoop.create_task(func(color))
-                        print('''%s - %s: added task to loop''' % (self._name, time()))
+                        print('''%s - %s: added task to loop, color: %s''' % (self._name, time(), color))
                         if clear!=None:
                             clear.clear()
                         break

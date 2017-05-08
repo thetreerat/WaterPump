@@ -4,17 +4,13 @@
 import machine
 import time
 
-try:    
-    import uasyncio.core as asyncio
-except ImportError:
-    import lib.uasyncio.core as asyncio
+import uasyncio.core as asyncio
     
 flowCount =0
 from WaterPumps.events import Event
 
 class flowMeter(object):
-
-    def __init__(self, flowPin, flowCount=0, rate=7.5, name='flowMeter'):
+    def __init__(self, flowPin, flowCount=0, rate=7.5, name='flowMeter', clicks=450):
         """Init a Flow meter sensor object"""
         self._name = name
         self.counterPin = machine.Pin(flowPin, machine.Pin.IN)
@@ -29,8 +25,9 @@ class flowMeter(object):
         self.gallonLiter = 0.264172
         self.noFlowEvent = Event(name='No Flow')
         self.pumpFinishEvent = None
-        self.flowFinshData = Event()
+        self.flowFinishData = Event()
         self.RunningEvent = None
+        self.clicksToLiters = clicks
 
         
     def timeInMillaseconds(self):
@@ -101,8 +98,8 @@ class flowMeter(object):
                         print('''%s - %s: No flow - Event: %s value: %s''' % (self._name, time.time(), self.noFlowEvent._name, self.noFlowEvent.value()))
             if self.pumpFinishEvent.is_set() and flowCount==0:
                 totalFlow = self.totalFlowCount / self.clicksToLiters
-                print('''%s - %s: Total Liters''' % (self._name,time.time(),totalFlow))
-                self.flowFinsishData.set(totalFlow)
+                print('''%s - %s: Total Liters: %s''' % (self._name,time.time(),totalFlow))
+                self.flowFinishData.set(totalFlow)
                 self.totalFlowCount = 0
             if debug:
                 if self.noFlowEvent==None:
