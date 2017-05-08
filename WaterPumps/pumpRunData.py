@@ -11,8 +11,9 @@ class pumpRunData(object):
         self.pumpedTotal = False        
         
     def totalRunTime(self):
+        from utime import time
         if self.finish:
-            totalRunTime = time.time() - self.start 
+            totalRunTime = time() - self.start 
         else:
             totalRunTime = self.finish - self.start
         return totalRunTime

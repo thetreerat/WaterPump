@@ -42,8 +42,9 @@ class pump(object):
         from utime import time
         from WaterPumps.pumpRunData import pumpRunData
         if not self.Power.value() and not self.pumpNotReadyEvent.is_set():
-            self.pumpRunData.append(self.currentRunData)
-            self.currentRunData = pumpRunData()
+            self.pumpRunData.append(self.currentRunData
+            if not self.currentRunData==None:
+                self.currentRunData = pumpRunData()
             self.Power.value(True)
             self.pumpRunningEvent.set(self.currentRunData.start)
             self.pumpFinishEvent.clear()
@@ -75,6 +76,7 @@ class pump(object):
             self.pumpStartEvent.clear()
             self.pumpRunningEvent.clear()
             self.pumpNotReadyEvent.set(True)
+            self.pumpCleanUpEvent.set(self.currentRunData.finish)
             msg ="""Pump Turned off"""
         else:
             msg = """Pump was already off!"""
@@ -109,6 +111,7 @@ class pump(object):
         import uasyncio as asyncio
         events = self.pumpFinishDataEvents
         while len(events)!=0:
+            #print('''pumpFinish evnets length: %s''' % (len(events)))
             for e,s in events:
                 if e.is_set():
                     if s=='pumpedTotal':
