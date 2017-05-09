@@ -8,7 +8,6 @@ sleep 5
 echo "installing install.py as main.py"
 ampy -p /dev/tty.SLAB_USBtoUART put install.py main.py
 
-#ampy -p /dev/tty.SLAB_USBtoUART put uasyncio.py uasyncio.py
 read -p "press enter and screen will start, reboot controller, it should reboot twice exit with ctrl+a, ctrl+\,Y"
 #ampy -p /dev/tty.SLAB_USBtoUART run install_waterpump.py
 screen /dev/tty.SLAB_USBtoUART 115200
