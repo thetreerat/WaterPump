@@ -25,5 +25,5 @@ echo "installing uasyncio core.py"
 ampy -p /dev/tty.SLAB_USBtoUART put ../lib/uasyncio/core.py lib/uasyncio/core.py
 echo "installing uasyncio __init__.py"
 ampy -p /dev/tty.SLAB_USBtoUART put ../lib/uasyncio/__init__.py lib/uasyncio/__init__.py
-echo "installing logging.py"
-ampy -p /dev/tty.SLAB_USBtoUART put ../lib/logging.py lib/logging.py
+#echo "installing logging.py"
+#ampy -p /dev/tty.SLAB_USBtoUART put ../lib/logging.py lib/logging.py
