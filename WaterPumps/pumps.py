@@ -1,8 +1,12 @@
 # Author: Harold Clark
 # Copyright Harold Clark 2017
 #
-
-
+try:
+    import lib.uasyncio as asyncio
+except ImportError:
+    import uasyncio as asyncio
+from utime import time
+    
 class pump(object):
     def __init__(self, powerPin,startupTime=20, name='Pump'):
         """Init a pump"""
@@ -39,7 +43,6 @@ class pump(object):
     
     async def pumpOn(self, event):
         """Turn on Pump if off. print and return action proformed"""
-        from utime import time
         from WaterPumps.pumpRunData import pumpRunData
         if not self.Power.value() and not self.pumpNotReadyEvent.is_set():
             if not self.currentRunData==None:
@@ -64,7 +67,6 @@ class pump(object):
     
     async def pumpOff(self, event):
         """Turn off pump if on. prints action proformed and return action as string"""
-        from utime import time
         print("""%s - %s: shuting down pump ...""" % (self._name, time()))
         print('''%s - %s: return event name''' % (event._name, time()))
         if self.Power.value():
@@ -88,9 +90,8 @@ class pump(object):
         
         
     async def timeOn(self, event):
-        import time
         if self.powerOnTime:
-            TimeOn = str(time.time() - self.powerOnTime)
+            TimeOn = str(time() - self.powerOnTime)
         else:
             TimeOn = 'Pump is Off'
         event.set(TimeOn)
@@ -109,9 +110,7 @@ class pump(object):
 
     async def pumpFinish(self, event):
         """coroutine for saving data"""
-        from utime import time
         print('Data will not be saved!!')
-        import uasyncio as asyncio
         events = []
         for e in self.pumpFinishDataEvents:
             events.append(e)
@@ -167,8 +166,6 @@ class pump(object):
             
     async def monitorPump(self, debug=False):
         """coroutine for handling pump requests"""
-        from utime import time
-        import uasyncio as asyncio
         print('''%s - %s: Monitor of pump started''' % (self._name, time()))
         loopcount = 0
         while True:

@@ -3,7 +3,10 @@
 #
 import machine
 import time
-import uasyncio.core as asyncio
+try:
+    import lib.uasyncio.core as asyncio    
+except ImportError:
+    import uasyncio.core as asyncio
 
 class pressureSensor(object):
     """ Class for pressure sensor """

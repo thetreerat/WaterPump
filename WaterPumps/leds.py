@@ -1,6 +1,12 @@
 # Author: Harold Clark
 # Copyright Harold Clark 2017
 #
+try:
+    import lib.uasyncio as asyncio
+except ImportError:
+    import uasyncio as asyncio
+from utime import time
+
 class led(object):
     def __init__(self,ledPin=0):
         """Init a single color led object"""
@@ -52,9 +58,7 @@ class triLed(object):
 
     
     async def monitorLED(self, debug=False):
-        """coroutine for monitor event to change the LED color"""
-        import uasyncio as asyncio
-        from utime import time
+        """coroutine for monitor event to change the LED color"""        
         print('''%s - %s: monitorLED Started''' % (self.name(), time()))
         mainLoop = asyncio.get_event_loop()
         mainLoop.create_task(self.setColor(self.LED_BLUE))

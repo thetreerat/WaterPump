@@ -1,7 +1,11 @@
 # Author: Harold Clark
 # Copyright Harold Clark 2017
 #
-import uasyncio.core as asyncio
+try:
+    import uasyncio.core as asyncio
+except ImportError:
+    import lib.uasyncio.core as asyncio
+
 class Event():
     """Class for Events"""
     def __init__(self, lp=False,name='Name not defined',debug=False):

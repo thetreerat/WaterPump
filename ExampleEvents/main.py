@@ -2,9 +2,9 @@
 # Copyright Harold Clark 2017
 #
 try:
-    import uasyncio as asyncio
-except ImportError:
     import lib.uasyncio as asyncio
+except ImportError:
+    import uasyncio as asyncio
 from WaterPumps.flowMeters import flowMeter
 from WaterPumps.flowMeters import callbackflow
 from WaterPumps.pumps import pump

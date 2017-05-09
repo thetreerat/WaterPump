@@ -1,6 +1,14 @@
 # Author: Harold Clark
 # Copyright Harold Clark 2017
 #
+
+try:
+    import lib.uasyncio as asyncio
+except ImportError:
+    import uasyncio as asyncio
+from utime import time
+from WaterPumps.events import Event
+
 class button(object):
     debounce_ms = 50
     def __init__(self, pin, state=None, name='Test'):
@@ -28,9 +36,6 @@ class button(object):
         
     async def monitorButton(self, startState='pumpOff', debug=True):
         """async coroutine for check state of multiple state buttons"""
-        import uasyncio as asyncio
-        from utime import time
-        from WaterPumps.events import Event
         #self.state = self.setCurrentState(startState)
         print('''%s - %s: Monitor button start in state: %s''' % (self._name, time(),self.state.state))
         pumpMessage = Event()

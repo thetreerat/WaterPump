@@ -3,8 +3,10 @@
 #
 import machine
 import time
-
-import uasyncio.core as asyncio
+try:
+    import uasyncio.core as asyncio
+except ImportError:
+    import lib.uasyncio.core as asyncio
     
 flowCount =0
 from WaterPumps.events import Event

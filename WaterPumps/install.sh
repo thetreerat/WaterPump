@@ -7,8 +7,9 @@ echo "puase 5 seconds for controller to settle"
 sleep 5
 echo "installing install.py as main.py"
 ampy -p /dev/tty.SLAB_USBtoUART put install.py main.py
-
-read -p "press enter and screen will start, reboot controller, it should reboot twice exit with ctrl+a, ctrl+\,Y"
+echo "screen will start, reboot controller, it should reboot twice exit with ctrl+a, ctrl+\,Y"
+ampy -p /dev/tty.SLAB_USBtoUART reset
+sleep 3
 #ampy -p /dev/tty.SLAB_USBtoUART run install_waterpump.py
 screen /dev/tty.SLAB_USBtoUART 115200
 echo "making dir WaterPumps"
@@ -21,9 +22,9 @@ ampy -p /dev/tty.SLAB_USBtoUART put ../ExampleEvents/main.py main.py
 #ampy -p /dev/tty.SLAB_USBtoUART put flowMeters.py WaterPumps/flowMeters.py
 #ampy -p /dev/tty.SLAB_USBtoUART put buttons.py WaterPumps/buttons.py
 #ampy -p /dev/tty.SLAB_USBtoUART put server_uasyncio.py WaterPumps/server_uasyncio.py
-echo "installing uasyncio core.py"
-ampy -p /dev/tty.SLAB_USBtoUART put ../lib/uasyncio/core.py lib/uasyncio/core.py
-echo "installing uasyncio __init__.py"
-ampy -p /dev/tty.SLAB_USBtoUART put ../lib/uasyncio/__init__.py lib/uasyncio/__init__.py
+#echo "installing uasyncio core.py"
+#ampy -p /dev/tty.SLAB_USBtoUART put ../lib/uasyncio/core.py lib/uasyncio/core.py
+#echo "installing uasyncio __init__.py"
+#ampy -p /dev/tty.SLAB_USBtoUART put ../lib/uasyncio/__init__.py lib/uasyncio/__init__.py
 #echo "installing logging.py"
 #ampy -p /dev/tty.SLAB_USBtoUART put ../lib/logging.py lib/logging.py
