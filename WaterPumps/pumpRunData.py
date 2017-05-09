@@ -12,9 +12,18 @@ class pumpRunData(object):
         
     def totalRunTime(self):
         from utime import time
-        if self.finish:
+        if not self.finish:
             totalRunTime = time() - self.start 
         else:
             totalRunTime = self.finish - self.start
         return totalRunTime
+    
+    
+    def printRunData(self):
+        print("""Run data
+              Start Time: %s
+              End Time: %s
+              Run Time: %s
+              Pumped Liters: %s
+              MaxPSI: %s""" % (self.start,self.finish, self.totalRunTime(),self.pumpedTotal, self.maxPSI))
         

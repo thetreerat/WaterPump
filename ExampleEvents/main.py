@@ -46,17 +46,20 @@ mainFlowMeter.counterPin.irq(trigger=mainFlowMeter.counterPin.IRQ_RISING, handle
 main_loop = asyncio.get_event_loop()
 
 #load flow monitor task
-main_loop.create_task(mainFlowMeter.monitorFlowMeter(debug=True))
-main_loop.create_task(mainPump.monitorPump(debug=False))
+main_loop.create_task(mainFlowMeter.monitorFlowMeter(debug=False))
+main_loop.create_task(mainPump.monitorPump())
 main_loop.create_task(statusLed.monitorLED())
 main_loop.create_task(powerButton.monitorButton(startState='pumpOff'))
+
+# register pumprunning with flow meter
+mainFlowMeter.RunningEvent = mainPump.pumpRunningEvent
 
 # register pump run data source
 mainPump.registerFinishDataEvent(mainFlowMeter.flowFinishData, 'pumpedTotal')
 
 #finished loading turn led bluw
 statusLed.setColor(statusLed.LED_BLUE)
-mainFlowMeter.pumpFinishEvent = mainPump.pumpFinishEvent
+mainFlowMeter.FinishEvent = mainPump.pumpFinishEvent
 #start main loop
 mainPump.pumpNotReadyEvent.clear()
 main_loop.run_forever()

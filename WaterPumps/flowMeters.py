@@ -16,22 +16,22 @@ class flowMeter(object):
         self.counterPin = machine.Pin(flowPin, machine.Pin.IN)
         self.flowCount = flowCount
         self.currentTime = self.timeInMillaseconds()
-        self.lastTime = self.currentTime
+        self.lastTime = self.timeInMillaseconds()
         self.rate = rate
-        self.flowStartTime = self.timeInMillaseconds()
+        self.flowStartTime = time.time()
         self.totalFlowCount = 0
         self.currentFlow = 0
         self.flowRate = 0
         self.gallonLiter = 0.264172
         self.noFlowEvent = Event(name='No Flow')
-        self.pumpFinishEvent = None
-        self.flowFinishData = Event()
-        self.RunningEvent = None
+        self.FinishEvent = Event(name='Finish Event with no handle') # should be a handle to a foreign event
+        self.flowFinishData = Event(name='Flow Finish Data')
+        self.RunningEvent = None # should be a handle to a foreign event
         self.clicksToLiters = clicks
 
         
     def timeInMillaseconds(self):
-        timevalue = int(time.time())
+        timevalue =  time.ticks_ms()
         return timevalue
     
     def setFlowCount(self,flowCount):
@@ -43,7 +43,7 @@ class flowMeter(object):
         
     def timeDelta(self):
         """calculate time delta in millaseconds"""
-        delta = self.currentTime - self.lastTime
+        delta = time.ticks_diff(self.currentTime, self.lastTime)/1000
         return delta
 
         
@@ -96,17 +96,21 @@ class flowMeter(object):
                         self.noFlowEvent.set(time.time())
                     if debug:
                         print('''%s - %s: No flow - Event: %s value: %s''' % (self._name, time.time(), self.noFlowEvent._name, self.noFlowEvent.value()))
-            if self.pumpFinishEvent.is_set() and flowCount==0:
+            elif self.FinishEvent.is_set() and flowCount>0:
+                self.setFlowCount(flowCount)
+                
+            await asyncio.sleep_ms(50)
+            if self.FinishEvent.is_set() and flowCount==0:
                 totalFlow = self.totalFlowCount / self.clicksToLiters
-                print('''%s - %s: Total Liters: %s''' % (self._name,time.time(),totalFlow))
+                print('''%s - %s: Total Liters: %s''' % (self._name,time.time(),totalFlow))                
                 self.flowFinishData.set(totalFlow)
                 self.totalFlowCount = 0
             if debug:
                 if self.noFlowEvent==None:
-                    print('no pumpFinishEvent handle')
+                    print('no FinishEvent handle')
                 else:
-                    print('''%s - %s: Finish Event set: %s, value: %s''' % (self._name, time.time(), self.pumpFinishEvent.is_set(),self.pumpFinishEvent.value()))
-            await asyncio.sleep(2)
+                    print('''%s - %s: Finish Event set: %s, value: %s''' % (self._name, time.time(), self.FinishEvent.is_set(),self.FinishEvent.value()))
+            await asyncio.sleep_ms(300)
 
 class flowRunData(object):
     """Class for create object to store Data"""
