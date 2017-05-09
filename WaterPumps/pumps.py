@@ -42,9 +42,9 @@ class pump(object):
         from utime import time
         from WaterPumps.pumpRunData import pumpRunData
         if not self.Power.value() and not self.pumpNotReadyEvent.is_set():
-            self.pumpRunData.append(self.currentRunData
             if not self.currentRunData==None:
-                self.currentRunData = pumpRunData()
+                self.pumpRunData.append(self.currentRunData)
+            self.currentRunData = pumpRunData()
             self.Power.value(True)
             self.pumpRunningEvent.set(self.currentRunData.start)
             self.pumpFinishEvent.clear()
@@ -58,13 +58,15 @@ class pump(object):
         else:
             msg = 'pump in unknown state'
         print('''%s - %s: %s''' % (self._name,self.currentRunData.start,msg))
+        print('''%s - %s: pump on, value of start event: %s''' % (self.pumpStartEvent._name, time(), self.pumpStartEvent.value()))
         return msg
     
     
     async def pumpOff(self, event):
         """Turn off pump if on. prints action proformed and return action as string"""
         from utime import time
-        print("""%s - %s: shuting down pump ...""" % (self._name, time()))        
+        print("""%s - %s: shuting down pump ...""" % (self._name, time()))
+        print('''%s - %s: return event name''' % (event._name, time()))
         if self.Power.value():
             self.Power.value(False)
             
@@ -107,20 +109,26 @@ class pump(object):
 
     async def pumpFinish(self, event):
         """coroutine for saving data"""
+        from utime import time
         print('Data will not be saved!!')
         import uasyncio as asyncio
-        events = self.pumpFinishDataEvents
+        events = []
+        for e in self.pumpFinishDataEvents:
+            events.append(e)
         while len(events)!=0:
-            #print('''pumpFinish evnets length: %s''' % (len(events)))
+            print('''pumpFinish evnets length: %s''' % (len(events)))
             for e,s in events:
                 if e.is_set():
                     if s=='pumpedTotal':
+                        print('''%s - %s: pumped data: %s''' % (e._name, time(), e.value()))
                         self.currentRunData.pumpedTotal = e.value()
                     e.clear()
                     events.remove((e,s))
             await asyncio.sleep_ms(50)
         self.pumpNotReadyEvent.clear()
         self.pumpFinishEvent.clear()
+        self.currentRunData.printRunData()
+        print('''after cleanup len(pump....): %s''' % (len(self.pumpFinishDataEvents)))
             
     def validCommandList(self):
         """return a list of valid server commands. if a fuction not to be exposed to server don't list"""
@@ -164,7 +172,7 @@ class pump(object):
         print('''%s - %s: Monitor of pump started''' % (self._name, time()))
         loopcount = 0
         while True:
-            loopcount += 1
+            loopcount += 1 
             await asyncio.sleep_ms(50)
             if debug:
                 print('''%s - %s: loop count: %s''' % (self._name, time(), loopcount))
@@ -174,5 +182,5 @@ class pump(object):
                     mainLoop.create_task(func(event.value()))
                     print('''%s - %s: added %s to loop %s''' % (self._name, time(), event._name, func))
                     event.clear()
-            
+
            

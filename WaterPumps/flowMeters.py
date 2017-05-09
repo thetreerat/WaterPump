@@ -24,12 +24,17 @@ class flowMeter(object):
         self.flowRate = 0
         self.gallonLiter = 0.264172
         self.noFlowEvent = Event(name='No Flow')
-        self.FinishEvent = Event(name='Finish Event with no handle') # should be a handle to a foreign event
+        self.finishEvent = Event(name='Finish Event with no handle') # should be a handle to a foreign event
         self.flowFinishData = Event(name='Flow Finish Data')
-        self.RunningEvent = None # should be a handle to a foreign event
+        self.shutoffDataReturn = Event(name='return data from shutoff')
+        self.runningEvent = False # should be a handle to a foreign event
+        self.startupEvent = False
+        self.shutoffEvent = False
         self.clicksToLiters = clicks
 
-        
+    def name(self):
+        return self._name
+    
     def timeInMillaseconds(self):
         timevalue =  time.ticks_ms()
         return timevalue
@@ -77,11 +82,11 @@ class flowMeter(object):
         self.noFlowEvent.clear()
         flowCount += 1
         print('''%s -%s: Monitor of flow meter started''' % (self._name, time.time()))
-        if self.RunningEvent==None:
-            self.RunningEvent = Event()
-            self.RunningEvent.set()
+        if not self.runningEvent:
+            self.runningEvent = Event()
+            self.runningEvent.set()
         while True:
-            if self.RunningEvent.is_set():
+            if self.runningEvent.is_set():
                 if flowCount>0:
                     self.noFlowEvent.clear()
                     self.setFlowCount(flowCount)
@@ -96,20 +101,27 @@ class flowMeter(object):
                         self.noFlowEvent.set(time.time())
                     if debug:
                         print('''%s - %s: No flow - Event: %s value: %s''' % (self._name, time.time(), self.noFlowEvent._name, self.noFlowEvent.value()))
-            elif self.FinishEvent.is_set() and flowCount>0:
+            elif self.finishEvent.is_set() and flowCount>0:
                 self.setFlowCount(flowCount)
                 
             await asyncio.sleep_ms(50)
-            if self.FinishEvent.is_set() and flowCount==0:
+            if self.finishEvent.is_set() and flowCount==0:
                 totalFlow = self.totalFlowCount / self.clicksToLiters
                 print('''%s - %s: Total Liters: %s''' % (self._name,time.time(),totalFlow))                
                 self.flowFinishData.set(totalFlow)
                 self.totalFlowCount = 0
+            if self.startupEvent and self.shutoffEvent:
+                if self.startupEvent.is_set():
+                    if self.startupEvent.value() < time.time() and not self.shutoffEvent.is_set() and flowCount==0:
+                        print('''startupEvent value: %s, posting ''' % (self.startupEvent.value()))
+                        self.shutoffEvent.set(self.shutoffDataReturn)
             if debug:
                 if self.noFlowEvent==None:
-                    print('no FinishEvent handle')
+                    print('no finishEvent handle')
                 else:
-                    print('''%s - %s: Finish Event set: %s, value: %s''' % (self._name, time.time(), self.FinishEvent.is_set(),self.FinishEvent.value()))
+                    print('''%s - %s: Finish Event set: %s, value: %s''' % (self._name, time.time(), self.finishEvent.is_set(),self.finishEvent.value()))
+            if self.shutoffDataReturn.is_set():
+                self.shutoffDataReturn.clear()
             await asyncio.sleep_ms(300)
 
 class flowRunData(object):

@@ -22,7 +22,7 @@ mainFlowMeter = flowMeter(flowPin=4, rate=4.8)
 #inialize led
 statusLed = triLed(redpin=13,bluepin=15,greenpin=12, name='statusLED')
 #make led yellow while booting program
-statusLed.setColor(statusLed.LED_YELLOW)
+statusLed.setStartColor(statusLed.LED_YELLOW)
 
 #inialize Pump objects: buttons, leds,flowsensors,pressure sensors, server process
 mainPump = pump(powerPin=14)
@@ -51,15 +51,17 @@ main_loop.create_task(mainPump.monitorPump())
 main_loop.create_task(statusLed.monitorLED())
 main_loop.create_task(powerButton.monitorButton(startState='pumpOff'))
 
-# register pumprunning with flow meter
+# register pump events with flow meter
 mainFlowMeter.RunningEvent = mainPump.pumpRunningEvent
-
+mainFlowMeter.finishEvent = mainPump.pumpFinishEvent
+mainFlowMeter.startupEvent = mainPump.pumpStartEvent
+mainFlowMeter.shutoffEvent = mainPump.pumpOffEvent
 # register pump run data source
 mainPump.registerFinishDataEvent(mainFlowMeter.flowFinishData, 'pumpedTotal')
 
+
 #finished loading turn led bluw
-statusLed.setColor(statusLed.LED_BLUE)
-mainFlowMeter.FinishEvent = mainPump.pumpFinishEvent
+
 #start main loop
 mainPump.pumpNotReadyEvent.clear()
 main_loop.run_forever()

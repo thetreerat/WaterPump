@@ -30,14 +30,19 @@ class triLed(object):
         self._name = name
         self.flashEvent = Event()
         if startColor==None:
-            self.setColor(self.LED_OFF)
+            self.setStartColor(self.LED_OFF)
         else:
-            self.setColor(startColor)
+            self.setStartColor(startColor)
         
     def name(self):
         return self._name
     
-    
+    def setStartColor(self, color):
+        R, B, G = color 
+        self.redPin.value(R)
+        self.bluePin.value(B)
+        self.greenPin.value(G)    
+        
     def registerLedClient(self, testTuple, index=0, debug=False):
         if len(testTuple)==4:
             self.ledServerList.insert(index, testTuple)
