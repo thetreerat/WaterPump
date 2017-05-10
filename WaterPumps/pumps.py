@@ -6,18 +6,19 @@ try:
 except ImportError:
     import uasyncio as asyncio
 from utime import time
-from WaterPumps.servers import validCommand
 from WaterPumps.events import Event
-import machine
+from WaterPumps.pumpRunData import pumpRunData
+from WaterPumps.validCommands import validCommand
 
 class pump(object):
     def __init__(self, powerPin,startupTime=20, name='Pump'):
-        """Init a pump"""        
-
+        """Init a pump"""
+        import machine
         self._name = name
         self.Power = machine.Pin(powerPin,machine.Pin.OUT)
         self.startupTime = startupTime
         self.pumpClients = []
+        self.pumpServers = []
         self.pumpMonitorEvents = []
         self.currentRunData = None
         self.pumpRunData = []
@@ -44,7 +45,6 @@ class pump(object):
     
     async def pumpOn(self, event):
         """Turn on Pump if off. print and return action proformed"""
-        from WaterPumps.pumpRunData import pumpRunData
         if not self.Power.value() and not self.pumpNotReadyEvent.is_set():
             if not self.currentRunData==None:
                 self.pumpRunData.append(self.currentRunData)
@@ -91,8 +91,8 @@ class pump(object):
         
         
     async def timeOn(self, event):
-        if self.powerOnTime:
-            TimeOn = str(time() - self.powerOnTime)
+        if self.pumpRunningEvent.is_set():
+            TimeOn = str(time() - self.currentRunData.start)
         else:
             TimeOn = 'Pump is Off'
         event.set(TimeOn)
@@ -101,7 +101,7 @@ class pump(object):
     
     async def pumpStatus(self, event):
         """check status of pump, and return test"""
-        from WaterPumps.server_uasyncio import Event
+
         if self.Power.value():
             msg = """Pump is on, running time: %s""" % (self.timeOn())
         else:
@@ -147,15 +147,16 @@ class pump(object):
     def registerMonitorEvent(self, Event, func):
         self.pumpMonitorEvents.append((Event, func))
         
-        
+    # this may not be need any more     
     def registerPumpClient(self, name):
         """register client to pump monitor and return valid Event handles"""
         self.pumpClient.append(name)
         return self.validCommandList()
     
-    
+        
     def registerFinishDataEvent(self, event, store):
         self.pumpFinishDataEvents.append((event,store))
+    
             
     async def monitorPump(self, debug=False):
         """coroutine for handling pump requests"""
@@ -172,5 +173,3 @@ class pump(object):
                     mainLoop.create_task(func(event.value()))
                     print('''%s - %s: added %s to loop %s''' % (self._name, time(), event._name, func))
                     event.clear()
-
-           

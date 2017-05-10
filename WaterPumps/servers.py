@@ -9,20 +9,23 @@ from WaterPumps.events import Event
 
 class pumpServer(object):
     """Class for pumpserver using uasyncio"""
-    def __init__(self, host='', port=8888):
+    def __init__(self, host='', port=8888, name='Test Server'):
         """initilzed the pump server class """
         import machine
-        self.serverName = 'Test Server'
+        self._name = name
         self.host = host
         self.port = port
         self.validCommands = []
-
-
+        
+    def name(self):
+        return self._name
+    
+    
     def validCommandList(self):
         """Method for extrating list for vaild commands"""
         list = []
         for v in self.validCommands:
-            list.append(v.name)
+            list.append(v.name())
         return list    
             
     def clearvalidCommandList(self):
@@ -60,7 +63,7 @@ class pumpServer(object):
     
     def pserverHelp(self):
         msg = """Welcome to %s\n\r\n\rip: %s on port %s\n\rexit - Exit session\n\rlist - list avalible commands\n\r
-help - this info\n\r""" % (self.serverName,
+help - this info\n\r""" % (self._name,
                         self.host,
                         self.port)
         return msg
@@ -69,7 +72,7 @@ help - this info\n\r""" % (self.serverName,
     def pserverList(self):
         msg = """List of commands\n\r"""
         for c in self.validCommandList():
-            msg = msg +  c + '\n\r'
+            msg = '''%s%s\n\r''' % (msg,c) 
         return msg
     
     def telnetPrint(self, msg):
@@ -77,7 +80,10 @@ help - this info\n\r""" % (self.serverName,
         msg = """%s\n\r""" % (msg)
         return msg
     
-    
+    def getEvent(self, commandName):
+        for ValidCommand in self.validCommands:
+            if ValidCommand.name()==commandName:
+                return ValidCommand.event
     @asyncio.coroutine
     def pserver(self, reader, writer):
         """coroutine for reading server requests"""
@@ -89,7 +95,8 @@ help - this info\n\r""" % (self.serverName,
             command = str(command)[2:-5]
             msg = ''
             if command in self.validCommandList():
-                self.addTasktoLoop(command, CommandDataEvent)
+                event = self.getEvent(command)
+                event.set(CommandDataEvent)
                 await CommandDataEvent
                 msg = self.telnetPrint(CommandDataEvent.value())
                 CommandDataEvent.clear()
@@ -110,11 +117,5 @@ help - this info\n\r""" % (self.serverName,
         yield from writer.aclose()
         print("Finished processing request")  
     
-class validCommand(object):
-    """Class for a Vaild Command on server"""
-    def __init__(self,name='',commandCoro=None,commandArgs=None):
-        """initilized vaildCommand"""
-        self.name = name
-        self.commandCoro = commandCoro
-        self.commandArgs = commandArgs
+
 
