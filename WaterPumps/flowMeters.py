@@ -7,9 +7,10 @@ try:
     import uasyncio.core as asyncio
 except ImportError:
     import lib.uasyncio.core as asyncio
-    
-flowCount =0
 from WaterPumps.events import Event
+from WaterPumps.validCommands import validCommand
+flowCount =0
+
 
 class flowMeter(object):
     def __init__(self, flowPin, flowCount=0, rate=7.5, name='flowMeter', clicks=450):
@@ -29,6 +30,7 @@ class flowMeter(object):
         self.finishEvent = Event(name='Finish Event with no handle') # should be a handle to a foreign event
         self.flowFinishData = Event(name='Flow Finish Data')
         self.shutoffDataReturn = Event(name='return data from shutoff')
+        self.currentFlowEvent = Event(name='Current Flow')
         self.runningEvent = False # should be a handle to a foreign event
         self.startupEvent = False
         self.shutoffEvent = False
@@ -74,7 +76,7 @@ class flowMeter(object):
     def validCommandList(self):
         """return a list of valid server commands. if a fuction not to be exposed to server don't list"""
         list = []
-        list.append(validCommand('calculateflow',self.calculateflow))
+        list.append(validCommand('currentFlow',self.currentFlowEvent))
         return list
         
     
@@ -124,6 +126,12 @@ class flowMeter(object):
                     print('''%s - %s: Finish Event set: %s, value: %s''' % (self._name, time.time(), self.finishEvent.is_set(),self.finishEvent.value()))
             if self.shutoffDataReturn.is_set():
                 self.shutoffDataReturn.clear()
+            
+            if self.currentFlowEvent.is_set():
+                if self.runningEvent.is_set():
+                    self.currentFlowEvent.value().set(self.flowRate)
+                else:
+                    self.currentFlowEvent.value().set('Pump is Off')
             await asyncio.sleep_ms(300)
 
 class flowRunData(object):
