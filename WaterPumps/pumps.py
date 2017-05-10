@@ -6,17 +6,18 @@ try:
 except ImportError:
     import uasyncio as asyncio
 from utime import time
-    
+from WaterPumps.servers import validCommand
+from WaterPumps.events import Event
+import machine
+
 class pump(object):
     def __init__(self, powerPin,startupTime=20, name='Pump'):
-        """Init a pump"""
-        import machine
-        from WaterPumps.events import Event
+        """Init a pump"""        
+
         self._name = name
         self.Power = machine.Pin(powerPin,machine.Pin.OUT)
         self.startupTime = startupTime
         self.pumpClients = []
-        self.pumpServers = []
         self.pumpMonitorEvents = []
         self.currentRunData = None
         self.pumpRunData = []
@@ -152,14 +153,6 @@ class pump(object):
         self.pumpClient.append(name)
         return self.validCommandList()
     
-    def registerPumpServer(self, name):
-        self.pumpServers.append(name)
-        e = []
-        e.append(('pumpStartEvent', self.pumpStartEvent))
-        e.append(('pumpRunningEvent', self.pumpRunningEvent))
-        e.append(('pumpFinishEvent', self.pumpFinishEvent))
-        e.append(('pumpNotReadyEvent', self.pumpNotReadyEvent))
-        return e
     
     def registerFinishDataEvent(self, event, store):
         self.pumpFinishDataEvents.append((event,store))
