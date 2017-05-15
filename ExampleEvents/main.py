@@ -20,7 +20,9 @@ from WaterPumps.buttons import state
 from WaterPumps.servers import pumpServer
 from WaterPumps.validCommands import validCommand
 
-
+import network
+n = network.WLAN(network.STA_IF)
+n.disconnect()
 
 logging.basicConfig(level=logging.DEBUG)
 mainFlowMeter = flowMeter(flowPin=4, rate=4.8)
@@ -33,16 +35,16 @@ statusLed.setStartColor(statusLed.LED_YELLOW)
 #inialize Pump objects: buttons, leds,flowsensors,pressure sensors, server process
 mainPump = pump(powerPin=14)
 powerButton = button(5, name='Power Button')
-mainServer = pumpServer(host='192.168.1.13', name='Server for Main Pump')
+#mainServer = pumpServer(host='192.168.1.3', name='Server for Main Pump')
 
 states = [state('pumpOff', event=mainPump.pumpOffEvent)]
 states.append(state('pumpOn', event=mainPump.pumpOnEvent))
 powerButton.states.setStates(states)
-powerButton.states.initState('pumpOff')
+
 
 #register validCommandlists into mainServer
-mainServer.setvalidCommandList(mainPump.validCommandList())
-mainServer.appendvalidCommandlist(mainFlowMeter.validCommandList())
+#mainServer.setvalidCommandList(mainPump.validCommandList())
+#mainServer.appendvalidCommandlist(mainFlowMeter.validCommandList())
 
 
 #statusLed.registerLedClient(([(mainPump.pumpStartEvent.value, time.time)],statusLed.makeOrange,None,0))
@@ -61,7 +63,7 @@ main_loop.create_task(mainFlowMeter.monitorFlowMeter(debug=False))
 main_loop.create_task(mainPump.monitorPump())
 main_loop.create_task(statusLed.monitorLED())
 main_loop.create_task(powerButton.monitorButton(startState='pumpOff'))
-main_loop.create_task(asyncio.start_server(mainServer.pserver, mainServer.host, mainServer.port))
+#main_loop.create_task(asyncio.start_server(mainServer.pserver, mainServer.host, mainServer.port))
 
 # register pump events with flow meter
 mainFlowMeter.RunningEvent = mainPump.pumpRunningEvent

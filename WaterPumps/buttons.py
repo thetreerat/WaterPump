@@ -37,8 +37,8 @@ class button(object):
         
     async def monitorButton(self, startState='pumpOff', debug=True):
         """async coroutine for check state of multiple state buttons"""
-        self.states.setStates(startState)
-        print('''%s - %s: Monitor button start in state: %s''' % (self._name, time(),self.state.state))
+        self.setCurrentState(startState)
+        print('''%s - %s: Monitor button start in state: %s''' % (self._name, time(), self.state.name))
         self.pumpMessage.clear()
         while True:
             if not self.pin.value():
@@ -46,12 +46,12 @@ class button(object):
                 #    print("Button Pressed currently!!")
                 if not self.buttonState:
                     if debug:
-                        print('''Button state changed from %s''' % (self.state.state))
+                        print('''Button state changed from %s''' % (self.state.name))
                     self.state = self.states.nextState()
                     if not self.state.event.is_set():
                         self.state.event.set(self.pumpMessage)
                         if debug:
-                            print('''Button State changed to %s''' % (self.state.state))
+                            print('''Button State changed to %s''' % (self.state.name))
                     else:
                         print("""%s - %s: event was active, nothing will be done""" % (self._name, time()))
                     if self.state.event.is_set():
@@ -65,9 +65,9 @@ class button(object):
                 self.pumpMessage.clear()
             await asyncio.sleep_ms(button.debounce_ms)            
                                 
-    def setCurrentState(self, state):
-        while self.state!=state:
-            self.state = self.states.nextState()
+    def setCurrentState(self, stateName):
+        StateObject = self.states.initState(stateName)
+        self.state = StateObject
             
 class states(object):
     """class for multiple state, not finished"""
@@ -75,34 +75,35 @@ class states(object):
         """inilize states"""
         from WaterPumps.buttons import state
         if states:
-            self.states = states
+            self.values = states
         else:
-            self.states = [state('Fasle'),state('True')]
+            self.values = [state('False'),state('True')]
         
     def nextState(self):
         """Toggle state"""
-        state = self.states.pop()
-        self.states.insert(0,state)
+        state = self.values.pop()
+        self.values.insert(0,state)
         return state
     
     
     def setStates(self, newStateList):
         """redefine state list"""
-        self.states = newStateList
+        self.values = newStateList
 
     def appendStates(self, NewState):
-        self.states.append(NewState)
+        self.values.append(NewState)
         
-    def initState(self, StateName):
-        self.nextState()
-        while self.states[-1].state!=StateName:
-            self.nextState()
+    def initState(self, name):
+        state = self.nextState()
+        while self.values[0].name!=name:
+            state = self.nextState()
+        return state
 
 class state(object):
     """class for a valid state"""
-    def __init__(self,state,event=None,args=False):
+    def __init__(self,name,event=None,args=False):
         """Inilize class object"""
-        self.state = state
+        self.name = name
         self.event = event
         if not args:
             self.args = args
