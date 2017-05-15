@@ -24,6 +24,7 @@ class button(object):
             self.state = state
         self.buttonState = False
         self._name = name
+        self.pumpMessage = Event(name='Button Data Return Event')
         
         
         
@@ -36,9 +37,9 @@ class button(object):
         
     async def monitorButton(self, startState='pumpOff', debug=True):
         """async coroutine for check state of multiple state buttons"""
-        #self.state = self.setCurrentState(startState)
+        self.states.setStates(startState)
         print('''%s - %s: Monitor button start in state: %s''' % (self._name, time(),self.state.state))
-        pumpMessage = Event()
+        self.pumpMessage.clear()
         while True:
             if not self.pin.value():
                 #if debug:
@@ -48,7 +49,7 @@ class button(object):
                         print('''Button state changed from %s''' % (self.state.state))
                     self.state = self.states.nextState()
                     if not self.state.event.is_set():
-                        self.state.event.set(pumpMessage)
+                        self.state.event.set(self.pumpMessage)
                         if debug:
                             print('''Button State changed to %s''' % (self.state.state))
                     else:
@@ -59,9 +60,9 @@ class button(object):
                     self.buttonState = True                    
             else:
                 self.buttonState = False
-            if pumpMessage.is_set():
-                print(pumpMessage.value)
-                pumpMessage.clear()
+            if self.pumpMessage.is_set():
+                print(self.pumpMessage.value)
+                self.pumpMessage.clear()
             await asyncio.sleep_ms(button.debounce_ms)            
                                 
     def setCurrentState(self, state):
@@ -88,6 +89,14 @@ class states(object):
     def setStates(self, newStateList):
         """redefine state list"""
         self.states = newStateList
+
+    def appendStates(self, NewState):
+        self.states.append(NewState)
+        
+    def initState(self, StateName):
+        self.nextState()
+        while self.states[-1].state!=StateName:
+            self.nextState()
 
 class state(object):
     """class for a valid state"""

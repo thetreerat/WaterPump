@@ -29,7 +29,7 @@ class flowMeter(object):
         self.noFlowEvent = Event(name='No Flow')
         self.finishEvent = Event(name='Finish Event with no handle') # should be a handle to a foreign event
         self.flowFinishData = Event(name='Flow Finish Data')
-        self.shutoffDataReturn = Event(name='return data from shutoff')
+        self.shutoffDataReturn = Event(name='dummy event need for calling pumpoff')
         self.currentFlowEvent = Event(name='Current Flow')
         self.runningEvent = False # should be a handle to a foreign event
         self.startupEvent = False
@@ -132,6 +132,7 @@ class flowMeter(object):
                     self.currentFlowEvent.value().set(self.flowRate)
                 else:
                     self.currentFlowEvent.value().set('Pump is Off')
+                self.currentFlowEvent.clear()
             await asyncio.sleep_ms(300)
 
 class flowRunData(object):
