@@ -76,8 +76,8 @@ class button(object):
             if self.buttonSetOff:
                 if debug:
                     print('''%s - %s: buttonSetOff is an event, value: %s''' % (self.buttonSetOff._name, time(), self.buttonSetOff.value()))
-                    print('''         buttonSetOff.is_set value: %s''' % (self.buttonSetOff.is_set()))
-                    print('''         buttonReturnOff.is_set value: %s''' % (self.buttonReturnOff.set()))
+                    print('''                  buttonSetOff.is_set value: %s''' % (self.buttonSetOff.is_set()))
+                    print('''                  buttonReturnOff.is_set value: %s''' % (self.buttonReturnOff.set()))
                 if self.buttonSetOff.is_set():
                     self.setCurrentState('pumpOff')
                     self.buttonRetunOff.set('Button Off')

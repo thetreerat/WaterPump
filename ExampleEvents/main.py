@@ -62,7 +62,7 @@ main_loop = asyncio.get_event_loop()
 main_loop.create_task(mainFlowMeter.monitorFlowMeter(debug=False))
 main_loop.create_task(mainPump.monitorPump())
 main_loop.create_task(statusLed.monitorLED())
-main_loop.create_task(powerButton.monitorButton(startState='pumpOff'))
+main_loop.create_task(powerButton.monitorButton(startState='pumpOff',debug=False))
 
 #main_loop.create_task(asyncio.start_server(mainServer.pserver, mainServer.host, mainServer.port))
 
