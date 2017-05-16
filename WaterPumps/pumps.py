@@ -63,6 +63,7 @@ class pump(object):
             msg = 'pump in unknown state'
         print('''%s - %s: %s''' % (self._name,self.currentRunData.start,msg))
         print('''%s - %s: pump on, value of start event: %s''' % (self.pumpStartEvent._name, time(), self.pumpStartEvent.value()))
+        event.set(msg)
         return msg
     
     
@@ -103,7 +104,10 @@ class pump(object):
         """check status of pump, and return test"""
 
         if self.Power.value():
-            msg = """Pump is on, running time: %s""" % (self.timeOn())
+            timeOn = Event(name='Time On')
+            self.pumpTimeOnEvent.set(timeOn)
+            await timeOn
+            msg = """Pump is on, running time: %s""" % (timeOn.value())
         else:
             msg = """Pump is off."""
         event.set(msg)

@@ -6,6 +6,7 @@ try:
 except ImportError:
     import uasyncio.core as asyncio
 from WaterPumps.events import Event
+from utime import time
 
 class pumpServer(object):
     """Class for pumpserver using uasyncio"""
@@ -97,6 +98,7 @@ help - this info\n\r""" % (self._name,
             if command in self.validCommandList():
                 event = self.getEvent(command)
                 event.set(CommandDataEvent)
+                print('''%s - %s: server request %s'''%(event._name, time(),event.value()._name))
                 await CommandDataEvent
                 msg = self.telnetPrint(CommandDataEvent.value())
                 CommandDataEvent.clear()
