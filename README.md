@@ -43,8 +43,23 @@ telnet conncection. This is all in devolpement.
 need text
 
 ## pumps.py
-This pump module controls a reley to turn on and off the pump. 
+This pump module controls a reley to turn on and off the pump. it has events 
 Events
+    pumpNotReadyEvent - event for pump to know it okay to start
+    pumpStartEvent - event for services that need to do some in the startup period
+    pumpCleanUpEvent - event for pumpMonitor to lauch a pump shutdown 
+    pumpFinishEvent - event for services to know to supply data on registered return events
+    pumpRunningEvent - event for pumpOn for service that need to know that the pump is on
+    pumpTimeOnEvent = Event(name='Pump Time On') # client event, running time ie server
+    pumpStatusEvent = Event(name='Pump Status')
+
+Register to events 
+    registerMonitorEvent(event, func) - this is used to create the list of things to monitor by the pump. is no flow, high pressure
+        event - class object
+        func - handle to the function that get lauched on the event being set.
+    registerFinishDataEvent(event, store) - this is used to create a list of events collect data from sensors
+        event - class object
+        store - name of the 
       
 
 ## flowMeters.py
