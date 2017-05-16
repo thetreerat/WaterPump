@@ -25,6 +25,10 @@ class button(object):
         self.buttonState = False
         self._name = name
         self.pumpMessage = Event(name='Button Data Return Event')
+        self.buttonSetOff = False
+        self.buttonRetunOff = Event(name='Button Off Return Event')
+        self.buttonSetOn = False
+        self.buttonReturnOff = Event(name='Button On Return Event')
         
         
         
@@ -63,7 +67,21 @@ class button(object):
             if self.pumpMessage.is_set():
                 print(self.pumpMessage.value)
                 self.pumpMessage.clear()
-            await asyncio.sleep_ms(button.debounce_ms)            
+            
+            #check if button set events are set and match button state to option 
+            if self.buttonSetOn:
+                if self.buttonSetOn.is_set():
+                    self.setCurrentState('pumpOn')
+                    self.buttonreurnOn.set('Button On')
+            if self.buttonSetOff:
+                if debug:
+                    print('''%s - %s: buttonSetOff is an event, value: %s''' % (self.buttonSetOff._name, time(), self.buttonSetOff.value()))
+                    print('''         buttonSetOff.is_set value: %s''' % (self.buttonSetOff.is_set()))
+                    print('''         buttonReturnOff.is_set value: %s''' % (self.buttonReturnOff.set()))
+                if self.buttonSetOff.is_set():
+                    self.setCurrentState('pumpOff')
+                    self.buttonRetunOff.set('Button Off')
+            await asyncio.sleep_ms(button.debounce_ms)
                                 
     def setCurrentState(self, stateName):
         StateObject = self.states.initState(stateName)

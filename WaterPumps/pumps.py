@@ -112,9 +112,7 @@ class pump(object):
     async def pumpFinish(self, event):
         """coroutine for saving data"""
         print('Data will not be saved!!')
-        events = []
-        for e in self.pumpFinishDataEvents:
-            events.append(e)
+        events = list(self.pumpFinishDataEvents)
         while len(events)!=0:
             print('''pumpFinish evnets length: %s''' % (len(events)))
             for e,s in events:
@@ -122,6 +120,8 @@ class pump(object):
                     if s=='pumpedTotal':
                         print('''%s - %s: pumped data: %s''' % (e._name, time(), e.value()))
                         self.currentRunData.pumpedTotal = e.value()
+                    if s=='powerButtonOff':
+                        print('''%s - %s: button state: %s''' % (e._name, time(), e.value()))
                     e.clear()
                     events.remove((e,s))
             await asyncio.sleep_ms(50)

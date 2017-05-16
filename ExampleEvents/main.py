@@ -63,6 +63,7 @@ main_loop.create_task(mainFlowMeter.monitorFlowMeter(debug=False))
 main_loop.create_task(mainPump.monitorPump())
 main_loop.create_task(statusLed.monitorLED())
 main_loop.create_task(powerButton.monitorButton(startState='pumpOff'))
+
 #main_loop.create_task(asyncio.start_server(mainServer.pserver, mainServer.host, mainServer.port))
 
 # register pump events with flow meter
@@ -70,9 +71,11 @@ mainFlowMeter.RunningEvent = mainPump.pumpRunningEvent
 mainFlowMeter.finishEvent = mainPump.pumpFinishEvent
 mainFlowMeter.startupEvent = mainPump.pumpStartEvent
 mainFlowMeter.shutoffEvent = mainPump.pumpOffEvent
-# register pump run data source
-mainPump.registerFinishDataEvent(mainFlowMeter.flowFinishData, 'pumpedTotal')
 
+# register pump run data sources
+mainPump.registerFinishDataEvent(mainFlowMeter.flowFinishData, 'pumpedTotal')
+mainPump.registerFinishDataEvent(powerButton.buttonReturnOff, 'powerButtonOff')
+powerButton.buttonSetOff = mainPump.pumpFinishEvent
 
 #finished loading turn led bluw
 

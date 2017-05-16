@@ -84,7 +84,7 @@ class flowMeter(object):
         """coroutine for monitoring flow"""
         global flowCount
         self.noFlowEvent.clear()
-        flowCount += 1
+        flowCount = 0
         print('''%s -%s: Monitor of flow meter started''' % (self._name, time.time()))
         if not self.runningEvent:
             self.runningEvent = Event()
@@ -101,11 +101,14 @@ class flowMeter(object):
             
                     print("""%s - %s: %s LPM""" % (self._name, time.time(), self.flowRate))
                 else:
-                    if self.flowRate==0 and not self.noFlowEvent.is_set():
+                    if not self.noFlowEvent.is_set() and flowCount==0:
                         self.noFlowEvent.set(time.time())
+                        if debug:
+                            print('''%s - %s: flowCount: %s''' % (self._name, time.time(), flowCount))
                     if debug:
                         print('''%s - %s: No flow - Event: %s value: %s''' % (self._name, time.time(), self.noFlowEvent._name, self.noFlowEvent.value()))
             elif self.finishEvent.is_set() and flowCount>0:
+                self.noFlowEvent.clear()
                 self.setFlowCount(flowCount)
                 
             await asyncio.sleep_ms(50)
@@ -116,8 +119,8 @@ class flowMeter(object):
                 self.totalFlowCount = 0
             if self.startupEvent and self.shutoffEvent:
                 if self.startupEvent.is_set():
-                    if self.startupEvent.value() < time.time() and not self.shutoffEvent.is_set() and flowCount==0:
-                        print('''startupEvent value: %s, posting ''' % (self.startupEvent.value()))
+                    if self.startupEvent.value() < time.time() and not self.shutoffEvent.is_set() and self.noFlowEvent.is_set():
+                        print('''startupEvent value: %s, posting ''' % (self.startupEvent.value()))        
                         self.shutoffEvent.set(self.shutoffDataReturn)
             if debug:
                 if self.noFlowEvent==None:
@@ -125,8 +128,7 @@ class flowMeter(object):
                 else:
                     print('''%s - %s: Finish Event set: %s, value: %s''' % (self._name, time.time(), self.finishEvent.is_set(),self.finishEvent.value()))
             if self.shutoffDataReturn.is_set():
-                self.shutoffDataReturn.clear()
-            
+                self.shutoffDataReturn.clear()            
             if self.currentFlowEvent.is_set():
                 if self.runningEvent.is_set():
                     self.currentFlowEvent.value().set(self.flowRate)
