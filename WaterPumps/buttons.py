@@ -39,7 +39,7 @@ class button(object):
         mainLoop = asyncio.get_event_loop()
         mainLoop.create_task(buttonTask)
         
-    async def monitorButton(self, startState='pumpOff', debug=True):
+    async def monitorButton(self, startState='pumpOff', debug=False):
         """async coroutine for check state of multiple state buttons"""
         self.setCurrentState(startState)
         print('''%s - %s: Monitor button start in state: %s''' % (self._name, time(), self.state.name))
@@ -74,13 +74,13 @@ class button(object):
                     self.setCurrentState('pumpOn')
                     self.buttonreurnOn.set('Button On')
             if self.buttonSetOff:
-                if debug:
-                    print('''%s - %s: buttonSetOff is an event, value: %s''' % (self.buttonSetOff._name, time(), self.buttonSetOff.value()))
-                    print('''                  buttonSetOff.is_set value: %s''' % (self.buttonSetOff.is_set()))
-                    print('''                  buttonReturnOff.is_set value: %s''' % (self.buttonReturnOff.set()))
                 if self.buttonSetOff.is_set():
                     self.setCurrentState('pumpOff')
                     self.buttonRetunOff.set('Button Off')
+                    print('''%s - %s: buttonSetOff is an event, value: %s''' % (self.buttonSetOff._name, time(), self.buttonSetOff.value()))
+                    print('''                  buttonSetOff.is_set value: %s''' % (self.buttonSetOff.is_set()))
+                    print('''                  buttonReturnOff.is_set value: %s''' % (self.buttonReturnOff.set()))
+
             await asyncio.sleep_ms(button.debounce_ms)
                                 
     def setCurrentState(self, stateName):
