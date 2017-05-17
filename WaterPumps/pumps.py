@@ -80,7 +80,6 @@ class pump(object):
             print('''%s, %s''' % (self.pumpFinishEvent.is_set(),self.pumpFinishEvent.value()))
             self.pumpOnEvent.clear()
             self.pumpStartEvent.clear()
-            self.pumpRunningEvent.clear()
             self.pumpNotReadyEvent.set(True)
             self.pumpCleanUpEvent.set(self.currentRunData.finish)
             msg ="""Pump Turned off"""
@@ -88,7 +87,7 @@ class pump(object):
             msg = """Pump was already off!"""
         print('''%s - %s: %s''' % (self._name, self.pumpFinishEvent.value(), msg))
         event.set(msg)
-        return msg
+        #return msg
         
         
     async def timeOn(self, event):
@@ -111,7 +110,7 @@ class pump(object):
         else:
             msg = """Pump is off."""
         event.set(msg)
-        return msg
+        #return msg
 
     async def pumpFinish(self, event):
         """coroutine for saving data"""
@@ -160,6 +159,7 @@ class pump(object):
         
     def registerFinishDataEvent(self, event, store):
         self.pumpFinishDataEvents.append((event,store))
+        returm self.pumpFinishEvent
     
             
     async def monitorPump(self, debug=False):

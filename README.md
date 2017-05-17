@@ -54,12 +54,17 @@ This pump module controls a reley to turn on and off the pump. it has events
     pumpStatusEvent = Event(name='Pump Status')  
 
 ### Register to events  
-    registerMonitorEvent(event, func) - this is used to create the list of things to monitor by the pump. is no flow, high pressure  
+    registerMonitorEvent(event, func)         
         event - class object  
-        func - handle to the function that get lauched on the event being set.  
-    registerFinishDataEvent(event, store) - this is used to create a list of events collect data from sensors  
+        func - handle to the function that get lauched on the event being set.
+        description - This is used to create the list of things to monitor by the pump.
+                      IE no flow, high pressure 
+    registerFinishDataEvent(event, store) 
         event - class object  
-        store - name of the  
+        store - name of object
+        description - Used to create a list of events to collect data from sensors or
+                      change states of objects.
+    
       
 
 ## flowMeters.py
