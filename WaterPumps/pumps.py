@@ -149,17 +149,11 @@ class pump(object):
         
     def registerMonitorEvent(self, Event, func):
         self.pumpMonitorEvents.append((Event, func))
-        
-    # this may not be need any more     
-    def registerPumpClient(self, name):
-        """register client to pump monitor and return valid Event handles"""
-        self.pumpClient.append(name)
-        return self.validCommandList()
-    
+            
         
     def registerFinishDataEvent(self, event, store):
         self.pumpFinishDataEvents.append((event,store))
-        returm self.pumpFinishEvent
+        return self.pumpFinishEvent
     
             
     async def monitorPump(self, debug=False):
