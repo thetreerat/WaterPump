@@ -6,14 +6,33 @@ try:
 except ImportError:
     import uasyncio as asyncio
 from utime import time
+import machine
+from WaterPumps.events import Event
 
 class led(object):
-    def __init__(self,ledPin=0):
+    def __init__(self,ledPin=0, name='Not Defined'):
         """Init a single color led object"""
-        import machine
         self.powerPin = machine.Pin(ledPin, machine.Pin.OUT)
-
-
+        self._name = name
+        self.ledOnEvent = Event()
+        self.ledOffEvent = Event()
+        
+    
+    def name(self):
+        return self._name
+    
+    async def monitorLED(self, debug=False):
+        print('''%s - %s: monitorLED Started''' % (self.name(), time()))
+        while True:
+            
+            await asyncio.sleep_ms(80)
+    
+    def registerOnEvent(self):
+        return self.ledOnEvent
+    
+    def registerOffEvent(self):
+        return self.ledOffEvent
+    
 class triLed(object):
     LED_BLUE = (True, False, True)
     LED_RED = (False, True, True)
@@ -26,8 +45,6 @@ class triLed(object):
     
     def __init__(self, redpin, bluepin, greenpin,name='Test', startColor=None):
         """Init a Tri color led object"""
-        import machine
-        from WaterPumps.events import Event
         self.redPin = machine.Pin(redpin, machine.Pin.OUT)
         self.bluePin = machine.Pin(bluepin, machine.Pin.OUT)
         self.greenPin = machine.Pin(greenpin, machine.Pin.OUT)
@@ -48,7 +65,8 @@ class triLed(object):
         self.redPin.value(R)
         self.bluePin.value(B)
         self.greenPin.value(G)    
-        
+    
+    #maybe replaced need to look into hed 6/17/17    
     def registerLedClient(self, testTuple, index=0, debug=False):
         if len(testTuple)==4:
             self.ledServerList.insert(index, testTuple)
