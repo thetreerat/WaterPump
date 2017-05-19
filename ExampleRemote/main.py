@@ -6,39 +6,63 @@ try:
     import lib.uasyncio as asyncio
 except ImportError:
     import uasyncio as asyncio
-    
-from utime import time
+try:
+    import logging
+except ImportError:
+    import lib.logging as logging
+from utime import time    
+
+from WaterPumps.buttons import state
+from WaterPumps.leds import led
+from WaterPumps.remotes import remote
+from WaterPumps.monitors import monitor
+from WaterPumps.contollers import controller
 from WaterPumps.events import Event
-import socket
-import network
-from WaterPumps.buttons import button
-from WaterPumps.leds import triLed
-
-pins = [4,5,12,13,14,15]
-
-lakeButton = button(5, name='Lake Button')
-parkButton = button(4, name='Park Button')
-statusLed = triLed(redpin=13,bluepin=15,greenpin=12, name='statusLED')
+from remotefunc import pumpOff
+from remotefunc import pumpOn
 
 
-#set button states
-states = [state('pumpOff', event=Event())]
-states.append(state('pumpOn', event=Event())
-lakeButton.states.setStates(states)
-states = [state('pumpOff', event=Event())]
-states.append(state('pumpOn', event=Event())
-parkButton.states.setStates(states)
+logging.basicConfig(level=logging.DEBUG)
+
+
 
 #Get handle for event loop
 main_loop = asyncio.get_event_loop()
 
-#register led monitors
-statusLed.registerLedClient(([(mainPump.pumpNotReadyEvent.is_set, True)],statusLed.setColor,statusLed.LED_YELLOW,None),0)
+lakeButton = button(5, name='Lake Button')
+parkButton = button(4, name='Park Button')
+lakeLed = led(ledPin=12, name='Lake LED')
+parkLed = led(ledPin=13, name='Park LED')
 
-#Load tasks
-main_loop.create_task(powerButton.monitorButton(startState='pumpOff',debug=False))
-main_loop.create_task(statusLed.monitorLED())
+#define Events for actions on button press
+lakePumpOn = Event(name='Lake Pump On')
+lakePumpOff = Event(name='Lake Pump Off')
+parkPumpOn = Event(name='Park Pump On')
+parkPumpOff = Event(name='Park Pump Off')
 
-#start main Loop
+#set button states
+states = [state('pumpOff', event=lakePumpOff)]
+states.append(state('pumpOn', event=lakePumpOn))
+lakeButton.states.setStates(states)
+states = [state('pumpOff', event=parkPumpOff)]
+states.append(state('pumpOn', event=parkPumpOn))
+parkButton.states.setStates(states)
+
+#create controller objects
+lakePump = controller(ip='192.168.1.5', name='Lake Pump Controller')
+parkPump = controller(ip='192.168.1.4', name='Park Pump Controller')
+
+remote = remote(name='Remote Control')
+remote.registerMonitor(monitor(name='Park Pump On', event=parkPumpOn, func=pumpOn, args=(parkPump.ip,parkLed,parkPumpOn)))
+remote.registerMonitor(monitor(name='Park Pump Off', event=parkPumpOff, func=pumpOff, args(parkPump.ip,parkLed,parkPumpOff)))
+
+#create task
+main_loop.create_task(lakeButton.monitorButton(startState='pumpOff',debug=False))
+main_loop.create_task(parkButton.monitorButton(startState='pumpOff',debug=False))
+main_loop.create_task(lakeLed.monitorLED())
+main_loop.create_task(parkLed.monitorLED())
+main_loop.create_task(remote.monitor())
+
+#start main loop
 main_loop.run_forever()
 main_loop.close()

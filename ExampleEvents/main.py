@@ -33,7 +33,7 @@ statusLed.setStartColor(statusLed.LED_YELLOW)
 #inialize Pump objects: buttons, leds,flowsensors,pressure sensors, server process
 mainPump = pump(powerPin=14)
 powerButton = button(5, name='Power Button')
-mainServer = pumpServer(host='192.168.1.13', name='Server for Main Pump')
+mainServer = pumpServer(host='192.168.1.4', name='Server for Main Pump')
 
 states = [state('pumpOff', event=mainPump.pumpOffEvent)]
 states.append(state('pumpOn', event=mainPump.pumpOnEvent))

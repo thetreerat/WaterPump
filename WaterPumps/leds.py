@@ -24,11 +24,12 @@ class led(object):
     async def monitorLED(self, debug=False):
         print('''%s - %s: monitorLED Started''' % (self.name(), time()))
         while True:
-            if ledOnEvent.is_set():
+            if self.ledOnEvent.is_set():
                 self.powerPin.value(True)
-                ledOnEvent.clear()
-            if ledOffEvent.is_set():
-                self.powerPin.value(False)    
+                self.ledOnEvent.clear()
+            if self.ledOffEvent.is_set():
+                self.powerPin.value(False)
+                self.ledOffEvent.clear()
             await asyncio.sleep_ms(80)
     
     def registerOnEvent(self):

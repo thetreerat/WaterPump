@@ -17,7 +17,8 @@ ampy -p /dev/tty.SLAB_USBtoUART mkdir WaterPumps
 #ampy -p /dev/tty.SLAB_USBtoUART mkdir lib
 #ampy -p /dev/tty.SLAB_USBtoUART mkdir lib/uasyncio
 echo "installing main.py from ExampleEvents"
-ampy -p /dev/tty.SLAB_USBtoUART put ../ExampleEvents/main.py main.py
+#ampy -p /dev/tty.SLAB_USBtoUART put ../ExampleEvents/main.py main.py
+ampy -p /dev/tty.SLAB_USBtoUART put ../ExampleRemote/main.py main.py
 #ampy -p /dev/tty.SLAB_USBtoUART put pressure.py WaterPumps/pressure.py
 #ampy -p /dev/tty.SLAB_USBtoUART put flowMeters.py WaterPumps/flowMeters.py
 #ampy -p /dev/tty.SLAB_USBtoUART put buttons.py WaterPumps/buttons.py
@@ -29,3 +30,11 @@ ampy -p /dev/tty.SLAB_USBtoUART put servers.py WaterPumps/servers.py
 #ampy -p /dev/tty.SLAB_USBtoUART put ../lib/uasyncio/__init__.py lib/uasyncio/__init__.py
 #echo "installing logging.py"
 #ampy -p /dev/tty.SLAB_USBtoUART put ../lib/logging.py lib/logging.py
+echo "installing remote.py"
+ampy -p /dev/tty.SLAB_USBtoUART put remotes.py WaterPumps/remotes.py
+echo "installing monitor.py"
+ampy -p /dev/tty.SLAB_USBtoUART put monitors.py WaterPumps/monitors.py
+echo "installing contollers.py"
+ampy -p /dev/tty.SLAB_USBtoUART put controllers.py WaterPumps/controllers.py
+echo "instlling remotefucn.py"
+ampy -p /dev/tty.SLAB_USBtoUART put ../ExampleRemove/remotefunc.py remotefunc.py
