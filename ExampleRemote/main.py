@@ -13,10 +13,11 @@ except ImportError:
 from utime import time    
 
 from WaterPumps.buttons import state
+from WaterPumps.buttons import button
 from WaterPumps.leds import led
 from WaterPumps.remotes import remote
 from WaterPumps.monitors import monitor
-from WaterPumps.contollers import controller
+from WaterPumps.controllers import controller
 from WaterPumps.events import Event
 from remotefunc import pumpOff
 from remotefunc import pumpOn
@@ -49,19 +50,21 @@ states.append(state('pumpOn', event=parkPumpOn))
 parkButton.states.setStates(states)
 
 #create controller objects
-lakePump = controller(ip='192.168.1.5', name='Lake Pump Controller')
+lakePump = controller(ip='192.168.1.9', name='Lake Pump Controller')
 parkPump = controller(ip='192.168.1.4', name='Park Pump Controller')
 
 remote = remote(name='Remote Control')
 remote.registerMonitor(monitor(name='Park Pump On', event=parkPumpOn, func=pumpOn, args=(parkPump.ip,parkLed,parkPumpOn)))
-remote.registerMonitor(monitor(name='Park Pump Off', event=parkPumpOff, func=pumpOff, args(parkPump.ip,parkLed,parkPumpOff)))
+remote.registerMonitor(monitor(name='Park Pump Off', event=parkPumpOff, func=pumpOff, args=(parkPump.ip,parkLed,parkPumpOff)))
+remote.registerMonitor(monitor(name='Lake Pump On', event=lakePumpOn, func=pumpOn, args=(lakePump.ip,lakeLed,lakePumpOn)))
+remote.registerMonitor(monitor(name='Lake Pump Off', event=lakePumpOff, func=pumpOff, args=(lakePump.ip,lakeLed,lakePumpOff)))
 
 #create task
 main_loop.create_task(lakeButton.monitorButton(startState='pumpOff',debug=False))
 main_loop.create_task(parkButton.monitorButton(startState='pumpOff',debug=False))
 main_loop.create_task(lakeLed.monitorLED())
 main_loop.create_task(parkLed.monitorLED())
-main_loop.create_task(remote.monitor())
+main_loop.create_task(remote.monitorRemote())
 
 #start main loop
 main_loop.run_forever()

@@ -8,6 +8,10 @@ class wifiHelper(object):
         self.sta_if = network.WLAN(network.STA_IF)
         self.sid = sid
         self.password = password
+        self.sta_ip = None
+        self.sta_mask = None
+        self.sta_router = None
+        self.sta_DNS = None
     
     
     def connectWifi(self):
@@ -17,8 +21,11 @@ class wifiHelper(object):
             self.sta_if.active(True)
             self.sta_if.connect(self.sid, self.password)
             time.sleep(5)
-        print('network config:', self.sta_if.ifconfig())
+        self.loadIP()
+        print('''network config:\r\nIP: %s\r\nMask: %s, Router: %s, DNS: %s''' % (self.sta_ip, self.sta_mask, self.sta_router, self.sta_DNS))
         
+    def loadIP(self):
+        self.sta_ip,self.sta_mask,self.sta_router,self.sta_DNS = self.sta_if.ifconfig()
         
     def startAP(self):
         """Start the access point"""

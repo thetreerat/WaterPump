@@ -36,5 +36,5 @@ echo "installing monitor.py"
 ampy -p /dev/tty.SLAB_USBtoUART put monitors.py WaterPumps/monitors.py
 echo "installing contollers.py"
 ampy -p /dev/tty.SLAB_USBtoUART put controllers.py WaterPumps/controllers.py
-echo "instlling remotefucn.py"
-ampy -p /dev/tty.SLAB_USBtoUART put ../ExampleRemove/remotefunc.py remotefunc.py
+echo "installing remotefucn.py"
+ampy -p /dev/tty.SLAB_USBtoUART put ../ExampleRemote/remotefunc.py remotefunc.py

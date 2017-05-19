@@ -2,7 +2,7 @@
 # Copyright Harold Clark 2017
 #
 
-class Monitor(object):
+class monitor(object):
     def __init__(self,name, event, func, args=()):
         self._name = name
         self.event = event

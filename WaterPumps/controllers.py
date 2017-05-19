@@ -3,7 +3,7 @@
 #
 
 class controller(object):
-    def __init__(self, ip, name='Not Defined', port=8888)
+    def __init__(self, ip, name='Not Defined', port=8888):
         self.ip = ip
         self.name = name
         self.port = port
