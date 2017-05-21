@@ -22,8 +22,8 @@ ampy -p /dev/tty.SLAB_USBtoUART put ../ExampleRemote/main.py main.py
 #ampy -p /dev/tty.SLAB_USBtoUART put pressure.py WaterPumps/pressure.py
 #ampy -p /dev/tty.SLAB_USBtoUART put flowMeters.py WaterPumps/flowMeters.py
 #ampy -p /dev/tty.SLAB_USBtoUART put buttons.py WaterPumps/buttons.py
-echo "installing servers.py"
-ampy -p /dev/tty.SLAB_USBtoUART put servers.py WaterPumps/servers.py
+#echo "installing servers.py"
+#ampy -p /dev/tty.SLAB_USBtoUART put servers.py WaterPumps/servers.py
 #echo "installing uasyncio core.py"
 #ampy -p /dev/tty.SLAB_USBtoUART put ../lib/uasyncio/core.py lib/uasyncio/core.py
 #echo "installing uasyncio __init__.py"

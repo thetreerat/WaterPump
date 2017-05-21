@@ -22,6 +22,7 @@ from WaterPumps.events import Event
 from remotefunc import pumpOff
 from remotefunc import pumpOn
 from remotefunc import checkPump
+from remotefunc import lauchController
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -58,6 +59,7 @@ remote.registerMonitor(monitor(name='Park Pump On', event=parkPumpOn, func=pumpO
 remote.registerMonitor(monitor(name='Park Pump Off', event=parkPumpOff, func=pumpOff, args=(parkPump,parkLed,parkPumpOff)))
 remote.registerMonitor(monitor(name='Lake Pump On', event=lakePumpOn, func=pumpOn, args=(lakePump,lakeLed,lakePumpOn)))
 remote.registerMonitor(monitor(name='Lake Pump Off', event=lakePumpOff, func=pumpOff, args=(lakePump,lakeLed,lakePumpOff)))
+remote.registerMonitor(monitor(name='controller active', event=lakePump.launchEvent, func=lauchController, args=(lakePump, lakePump.launchEvent)))
 
 #create task
 main_loop.create_task(lakeButton.monitorButton(startState='pumpOff',debug=False))
@@ -66,7 +68,8 @@ main_loop.create_task(lakeLed.monitorLED())
 main_loop.create_task(parkLed.monitorLED())
 main_loop.create_task(remote.monitorRemote())
 main_loop.create_task(checkPump(lakePump, lakeLed))
-main_loop.create_task(checkPump(parkPump, parkLed))
+#main_loop.create_task(lakePump.monitorContoller())
+#main_loop.create_task(checkPump(parkPump, parkLed))
 
 #start main loop
 main_loop.run_forever()
