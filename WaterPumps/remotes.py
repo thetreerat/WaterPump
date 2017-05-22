@@ -26,7 +26,7 @@ class remote(object):
         while True:
             for M in self.MonitorList:
                 if M.event.is_set():
-                    main_loop.creatEvente_task(M.func(*M.args))
+                    main_loop.create_task(M.func(*M.args))
                     M.event.clear()
             await asyncio.sleep_ms(80)
         

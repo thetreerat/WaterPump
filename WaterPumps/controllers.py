@@ -37,35 +37,19 @@ class controller(object):
     async def monitorController(self, debug=False):
         s = socket.socket()
         print('''%s attemp to connect on port %s''' % (self.name(), self.port))        
-        try:
-            s.connect((self.ip, self.port))
-        except OSError as e:
-            if e.args[0] == 103:
-                self.noConnectionEvent.set(time())
-                print('''%s - %s: no connection to %s on port %s''' % (self.name(), time(), self.ip, self.port))
-                self.launchEvent.set()
-                self.notActiveEvent.set(time() + 10)
-                return
-            else:
-                self.OSErrorEvent.set(e.args[0])
-                raise
+        reader, writer = yield from asyncio.open_connection(self.ip, self.port)
         print('''%s - %s: connected to %s on %s''' % (self.name(), time(), self.ip, self.port))
         while not self.controllerCloseEvent.is_set():
             await asyncio.sleep_ms(500)
             if len(self.messageQue):
-                 command, event = self.messageQue.pop()
-                 try:
-                    s.send(command)
-                 except socket.error as e:
-                    print(e)
-                    s.close()
-                    self.notActiveEvent.set(time() + 7)
-                    self.launchEvent.set(time())
-                 controllerMessage = s.recv().decode("utf-8")[:-2]
-                 #cleanMessage = controllerMessage
-                 event.set(controllerMessage)
-                 if debug:
+                command, event = self.messageQue.pop()
+                yield from writer.awrite(command) 
+                controllerMessage = yield from reader.read()
+                controllerMessage = controllerMessage.decode("utf-8")[:-2]
+                #cleanMessage = controllerMessage
+                event.set(controllerMessage)
+                if debug:
                     print('''%s - %s: return message: %s''' % (self.name(), time(),controllerMessage))
-        s.send('exit\r\n')
+        writer.awrite('exit\r\n')
         s.close()
         self.notActiveEvent.set(time() + 10)
