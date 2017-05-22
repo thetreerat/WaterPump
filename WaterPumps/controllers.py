@@ -21,9 +21,9 @@ class controller(object):
         self.OSErrorEvent = Event(name='''%s - OSError''' % (name))
         self.notActiveEvent = Event(name='''%s - Not Active''' % (name))
         self.notActiveEvent.set(time() + 5)
-        self.lauchController = Event(name='''%s - Lauch Event''' % (name))
-        self.lauchController.set(time())
-        self.lauchCount = 0
+        self.launchEvent = Event(name='''%s - Lauch Event''' % (name))
+        self.launchEvent.set(time())
+        self.launchCount = 0
     
     
     def name(self):
@@ -43,10 +43,12 @@ class controller(object):
             if e.args[0] == 103:
                 self.noConnectionEvent.set(time())
                 print('''%s - %s: no connection to %s on port %s''' % (self.name(), time(), self.ip, self.port))
+                self.launchEvent.set()
+                self.notActiveEvent.set(time() + 10)
                 return
             else:
                 self.OSErrorEvent.set(e.args[0])
-                return
+                raise
         print('''%s - %s: connected to %s on %s''' % (self.name(), time(), self.ip, self.port))
         while True:
             await asyncio.sleep_ms(500)
