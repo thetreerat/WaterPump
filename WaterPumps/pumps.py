@@ -82,6 +82,7 @@ class pump(object):
             self.pumpStartEvent.clear()
             self.pumpNotReadyEvent.set(True)
             self.pumpCleanUpEvent.set(self.currentRunData.finish)
+            self.pumpRunningEvent.clear()
             msg ="""Pump Turned off"""
         else:
             msg = """Pump was already off!"""
