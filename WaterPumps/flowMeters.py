@@ -84,7 +84,10 @@ class flowMeter(object):
         list = []
         list.append(validCommand('currentFlow',self.currentFlowEvent))
         return list
-        
+    
+    def registerFinishEvent(self, event):
+        self.finishEvent = event
+        return self.flowFinishData
     
     async def monitorFlowMeter(self, debug=False):
         """coroutine for monitoring flow"""
