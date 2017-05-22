@@ -46,7 +46,7 @@ need text
 This pump module controls a reley to turn on and off the pump. it has events  
 ### Events  
     pumpNotReadyEvent - event for pump to know it okay to start  
-    pumpStartEvent - event for services that need to do some in the startup period  
+    pumpStartEvent - event for services that need to do some in the startup period. value is the time from epoch that startup period ends. 
     pumpCleanUpEvent - event for pumpMonitor to lauch a pump shutdown  
     pumpFinishEvent - event for services to know to supply data on registered return events  
     pumpRunningEvent - event for pumpOn for service that need to know that the pump is on  
@@ -58,18 +58,45 @@ This pump module controls a reley to turn on and off the pump. it has events
         event - class object  
         func - handle to the function that get lauched on the event being set.
         description - This is used to create the list of things to monitor by the pump.
-                      IE no flow, high pressure 
+                      IE no flow, high pressure
+        returns - nothing
     registerFinishDataEvent(event, store) 
         event - class object  
         store - name of object
         description - Used to create a list of events to collect data from sensors or
                       change states of objects.
+        returns - handle to the finishDataEvent
+
+### init items
+    PowerPin - pin for turin rely on and off
+    startUpTime - (20) start up period length in seconds.
+    name - (Pump) the name of the object. helpful when multiple Pump items defined, repl messages, and debuging issues
     
       
 
 ## flowMeters.py
-need text
+Module for running Hall effect Sensors Flow meters. Constants for Adafruit 1/2 meter, and Digiten G1 meter.
+Since the sensors are hall effect sensors, you need to do IRQ interupts on the pin for the meter.
+### Events
+    noFlowEvent - set when pump is running and there is no flow
+    flowFinishData - event for recording total liters pumped on last run. filled when finishEvent is set.
+    shutoffDataReturn - dummy event for for calling pumpoff
+    currentflowEvent - used to request currentflow data. set to handle of return data event
+    
 
+### Register to events
+    registerFinishEvent(event)
+        event - handle to forgien handle to call for data.
+        description - this is used to register a event for calling for finish run data. 
+        returns - flowFinishData handle
+    
+### init items
+    flowPin - pin for reading palues.
+    flowCount - (0) this is where palses are stored when resetting globle flowCount
+    rate - this is the meters Flow rate pulse Characterristics (constances for supporte meters)
+    name - (flowMeter) display name for flow meter object
+    clicks - (450) number of clicks/pulses per litter.
+    
 ## pressure.py
 need text
 

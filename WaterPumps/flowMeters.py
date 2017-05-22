@@ -13,6 +13,12 @@ flowCount =0
 
 
 class flowMeter(object):
+    GALLON_LITTER = 0.264172
+    ADAFRUIT_1_2_PULSE_LITTER = 450
+    ADAFRUIT_1_2_RATE = 7.5
+    G1_PULSE_LITTER = 450
+    G1_RATE = 4.5
+    
     def __init__(self, flowPin, flowCount=0, rate=7.5, name='flowMeter', clicks=450):
         """Init a Flow meter sensor object"""
         self._name = name
@@ -25,7 +31,7 @@ class flowMeter(object):
         self.totalFlowCount = 0
         self.currentFlow = 0
         self.flowRate = 0
-        self.gallonLiter = 0.264172
+        self.gallonLiter = self.GALLON_LITTER
         self.noFlowEvent = Event(name='No Flow')
         self.finishEvent = Event(name='Finish Event with no handle') # should be a handle to a foreign event
         self.flowFinishData = Event(name='Flow Finish Data')
