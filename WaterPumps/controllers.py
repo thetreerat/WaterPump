@@ -6,8 +6,13 @@ try:
     import lib.uasyncio as asyncio
 except ImportError:
     import uasyncio as asyncio
+try:
+    import logging
+except ImportError:
+    import lib.logging as logging
+    
 from utime import time
-import socket
+import socket 
 from WaterPumps.events import Event
 
 class controller(object):
@@ -35,11 +40,16 @@ class controller(object):
     
         
     async def monitorController(self, debug=False):
-        s = socket.socket()
-        print('''%s attemp to connect on port %s''' % (self.name(), self.port))        
-        reader, writer = yield from asyncio.open_connection(self.ip, self.port)
-        print('''%s - %s: connected to %s on %s''' % (self.name(), time(), self.ip, self.port))
-        while not self.controllerCloseEvent.is_set():
+        #s = socket.socket()
+        print('''%s - %s: attemp to connect on port %s''' % (self.name(), time(), self.port))        
+        reader, writer = yield from connectController(self.ip, self.port, True)
+        if not reader:
+            #self.notActiveEventset(time() + 10 + self.launchCount)
+            self.launchEvent.set(time())
+            self.controllerClose.set(time())
+        else:
+            print('''%s - %s: connected to %s on %s''' % (self.name(), time(), self.ip, self.port))
+        while not self.controllerClose.is_set():
             await asyncio.sleep_ms(500)
             if len(self.messageQue):
                 command, event = self.messageQue.pop()
@@ -50,6 +60,23 @@ class controller(object):
                 event.set(controllerMessage)
                 if debug:
                     print('''%s - %s: return message: %s''' % (self.name(), time(),controllerMessage))
-        writer.awrite('exit\r\n')
-        s.close()
+        #writer.awrite('exit\r\n')
+        #s.close()
         self.notActiveEvent.set(time() + 10)
+        
+        
+def connectController(ip, port, debug=False):
+    if debug:
+        print('''Controller at %s on port %s atempting connection ...'''% (ip,port))
+    s = socket.socket()
+    try:
+        s.connect((ip,port))
+    except OSError as e:
+        print('''%s - %s: Error: %s''' % (ip, time(), e.args[0]))
+        return None, e.args[0]
+    if debug:
+        print('''%s - %s: connection open''' % (ip, time()))
+    yield IOWrite(s)
+    if debug:
+        print('''%s - %s: After IOWAIT''' % (ip, time()))
+    return asyncio.StreamREader(s), asyncio.StreamWriter(s, {})
