@@ -136,16 +136,11 @@ class pump(object):
             
     def validCommandList(self):
         """return a list of valid server commands. if a fuction not to be exposed to server don't list"""
-        list = []
-        b = validCommand('pumpOn',self.pumpOnEvent)
-        list.append(b)
-        b = validCommand('pumpOff',self.pumpOffEvent)
-        list.append(b)
-        b = validCommand('pumpStatus',self.pumpStatusEvent)
-        list.append(b)
-        b = validCommand('timeOn',self.pumpTimeOnEvent) 
-        list.append(b)
-        return list
+        clist = [validCommand('pumpOn',self.pumpOnEvent)]
+        clist.append(validCommand('pumpOff',self.pumpOffEvent))
+        clist.append(validCommand('pumpStatus',self.pumpStatusEvent))
+        clist.append(validCommand('timeOn',self.pumpTimeOnEvent) )
+        return clist
         
         
     def registerMonitorEvent(self, Event, func):

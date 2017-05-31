@@ -16,20 +16,30 @@ class led(object):
         self._name = name
         self.ledOnEvent = Event()
         self.ledOffEvent = Event()
+        self._ledMonitorEvents = []
+        self.registerMonitorEvents(self.ledOnEvent, self.ledChange, True)
+        self.registerMonitorEvents(self.ledOffEvent, self.ledChange, False)
         
     
     def name(self):
         return self._name
     
+    def registerMonitorEvents(self, event, func, state):
+        self.ledMonitorEvents.append((Event, func, state))
+    
+    async def ledChange(self, event, state):
+        self.powerPin.value(state)
+        event.clear()
+        
     async def monitorLED(self, debug=False):
         print('''%s - %s: monitorLED Started''' % (self.name(), time()))
         while True:
-            if ledOnEvent.is_set():
-                self.powerPin.value(True)
-                ledOnEvent.clear()
-            if ledOffEvent.is_set():
-                self.powerPin.value(False)    
-            await asyncio.sleep_ms(80)
+            for event, func, state in self._ledMonitorEvents:
+                if e.is_set():
+                    mainLoop = asyncio.get_event_loop()
+                    mainLoop.create_task(func(event.value(), state))
+                    print('''%s - %s: event %s set, adding func %s to loop''' % (self._name, time(), event.name(), func))
+                    await asyncio.sleep_ms(80)
     
     def registerOnEvent(self):
         return self.ledOnEvent
