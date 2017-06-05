@@ -99,6 +99,18 @@ Since the sensors are hall effect sensors, you need to do IRQ interupts on the p
     
 ## pressure.py
 need text
+### Events
+    pressureLowEvent - This event is set when pressure less then lowPressure value. lowPressure value default is 20 psi and can be set at init of object.
+    pressureHighEvent - This event is set when pressuer is greater then highPressure value. defualt value is 150 psi, it can be set at init of of object.
+
+### Register to events
+    registerCheckPrssure(event)
+        event - handle to forgien event for returning data.
+    registerCheckMax(event)
+        event - handle to forien event for return data.
+
+### functions
+    calibrateSensor - This sets the sensorLowCorrection value, this should only be run when there is no pressure on the sensor as it will adjust what is a 0 psi reading.
 
 ## buttons.py
 need text
