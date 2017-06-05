@@ -114,7 +114,7 @@ help - this info\n\r""" % (self._name,
             print(msg)
             yield from writer.awrite(msg)
             print("After response write")
-            if command=='exit':
+            if command in ['exit', 'quit']:
                 break
         yield from writer.aclose()
         print("Finished processing request")  
