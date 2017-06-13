@@ -15,7 +15,11 @@ class Event():
         self.debug = debug
         self.clear()
         
-        
+
+    def name(self):
+        return self._name
+
+    
     def clear(self):
         """Clear the event if flag"""
         if self.debug:
@@ -30,7 +34,9 @@ class Event():
         while not self._flag:
             yield from self.after(0)
 
+
     __iter__ = __await__
+
 
     def is_set(self):
         """Method for returning the state of the event"""

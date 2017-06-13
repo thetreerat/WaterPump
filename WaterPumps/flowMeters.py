@@ -32,37 +32,19 @@ class flowMeter(object):
         self.currentFlow = 0
         self.flowRate = 0
         self.gallonLiter = self.GALLON_LITTER
-        self.noFlowEvent = Event(name='No Flow')
-        self.finishEvent = Event(name='Finish Event with no handle') # should be a handle to a foreign event
-        self.flowFinishData = Event(name='Flow Finish Data')
-        self.shutoffDataReturn = Event(name='dummy event need for calling pumpoff')
-        self.currentFlowEvent = Event(name='Current Flow')
+        self.noFlowEvent = Event(name='''%s No Flow''' % (self._name)) # 
+        #self.finishEvent = Event(name='Finish Event with no handle') # should be a handle to a foreign event
+        self.shutoffComplete = Event(name='shutoff event with rundata payload')
+        self.currentFlowEvent = Event(name='%s Current Flow')
         self.runningEvent = False # should be a handle to a foreign event
         self.startupEvent = False
-        self.shutoffEvent = False
         self.clicksToLiters = clicks
-
-    def name(self):
-        return self._name
-    
-    def timeInMillaseconds(self):
-        timevalue =  time.ticks_ms()
-        return timevalue
-    
-    def setFlowCount(self,flowCount):
-        """set flowCount and reset time var"""
-        self.flowCount = flowCount
-        self.lastTime = self.currentTime
-        self.currentTime = self.timeInMillaseconds()
-        self.totalFlowCount += self.flowCount
+        self._validCommandList = []
+        self._monitorEvents = []
+        self.registerMonitorEvent('currentFlow', self.currentFlowEvent, self.currentFlow)
+        self.registerMonitorEvent('runningTotal', self.runningTotal, self.runningTotal)
         
-    def timeDelta(self):
-        """calculate time delta in millaseconds"""
-        delta = time.ticks_diff(self.currentTime, self.lastTime)/1000
-        return delta
-
-        
-    def calculateflow(self, debug=False):
+    def calculateFlow(self, debug=False):
         """Calucate the instatane flow"""
         if self.timeDelta()!=0:
             Hz = (self.flowCount/self.timeDelta())
@@ -78,23 +60,108 @@ class flowMeter(object):
         return Hz
         #self.currenttime = self.timeInMillaseconds()
 
+    def launch(self, monitorObject):
+        m = monitorObject
+        mainLoop = asyncio.get_event_loop()
+        mainLoop.create_task(m.func(**m.args))
+        
+    def name(self):
+        return self._name
+    
+    
+    def registerRunningEvent(self, event):
+        self.runningEvent = event
+        return 1
+    
+    def registerStartupEvent(self, event):
+        self.startupEvent = event
+        return 1
+        
+    def registerShutOff(self):
+        self.registerMonitorEvent(None, self.shutOffComplete, self.getFinishData)
+        return self.shutOffComplete
+        
+    def registerMonitorEvents(self, name, event, func, args={}):
+        if name:
+            self._validCommandList.append(validCommand(name, event))
+        self._monitorEvents.append((Event, func))
+        
+    #def registerFinishEvent(self, event=None):
+    #    if registerFinishEvent:
+    #        self.finishEvent = event
+    #    return self.shutoffDataReturn
+
+
+    def setFlowCount(self,flowCount):
+        """set flowCount and reset time var"""
+        self.flowCount = flowCount
+        self.lastTime = self.currentTime
+        self.currentTime = self.timeInMillaseconds()
+        self.totalFlowCount += self.flowCount
+        
+        
+    def timeDelta(self):
+        """calculate time delta in millaseconds"""
+        delta = time.ticks_diff(self.currentTime, self.lastTime)/1000
+        return delta
+
+
+    def timeInMillaseconds(self):
+        timevalue =  time.ticks_ms()
+        return timevalue
+    
 
     def validCommandList(self):
         """return a list of valid server commands. if a fuction not to be exposed to server don't list"""
-        list = []
-        list.append(validCommand('currentFlow',self.currentFlowEvent))
-        return list
-    
-    def registerFinishEvent(self, event):
-        self.finishEvent = event
-        return self.flowFinishData
-    
-    async def monitorFlowMeter(self, debug=False):
-        """coroutine for monitoring flow"""
+        for c in self.validCommandList:
+            l.append(c.name())
+        return l
+
+    async def currentFlow(self):
+        if self.runningEvent.is_set():
+            self.currentFlowEvent.value().set(self.flowRate)
+        else:
+            self.currentFlowEvent.value().set('Pump is Off')
+
+    async def getFinishData(self):
+        totalFlow = self.totalFlowCount / self.clicksToLiters
+        print('''%s - %s: Total Liters: %s''' % (self._name,time.time(),totalFlow))                
+        self.shutOffEvent.value().totalLiters = totalflow
+        self.totalFlowCount = 0
+                
+            
+    async def monitorFlowMeter2(self, debug=False):
+        print('''%s -%s: Monitor of flow meter started''' % (self._name, time.time()))
         global flowCount
         self.noFlowEvent.clear()
         flowCount = 0
+        if not self.runningEvent:
+            self.runningEvent = Event()
+            self.runningEvent.set()
+        while True:
+            await asyncio.ms_sleep(50)
+            if flowCount>0:
+                self.noFlowEvent.clear()
+                self.setflowCount(flowCount)
+                flowCount = 0
+                Hz = self.calculateFlow()
+                print("""%s - %s: %s LPM""" % (self._name, time.time(), self.flowRate))
+            else:
+                if self.startupEvent:
+                    if self.startupEvent.value() > time():
+                        self.noFlowEvent.set(time())
+            for m in self._moitorEvents:
+                if m.event.is_set():
+                    self.launch(m)
+                    m.event.clear()
+            
+                
+            
+    async def monitorFlowMeter(self, debug=False):
         print('''%s -%s: Monitor of flow meter started''' % (self._name, time.time()))
+        global flowCount
+        self.noFlowEvent.clear()
+        flowCount = 0
         if not self.runningEvent:
             self.runningEvent = Event()
             self.runningEvent.set()
@@ -104,7 +171,7 @@ class flowMeter(object):
                     self.noFlowEvent.clear()
                     self.setFlowCount(flowCount)
                     flowCount = 0
-                    Hz = self.calculateflow()
+                    Hz = self.calculateFlow()
                     #totalseconds = time.time() - self.flowStartTime
                     #totalliters = self.totalFlowCount/450
             
@@ -126,11 +193,11 @@ class flowMeter(object):
                 print('''%s - %s: Total Liters: %s''' % (self._name,time.time(),totalFlow))                
                 self.flowFinishData.set(totalFlow)
                 self.totalFlowCount = 0
-            if self.startupEvent and self.shutoffEvent:
+            if self.startupEvent and self.shutOffEvent:
                 if self.startupEvent.is_set():
-                    if self.startupEvent.value() < time.time() and not self.shutoffEvent.is_set() and self.noFlowEvent.is_set():
+                    if self.startupEvent.value() < time.time() and not self.shutOffEvent.is_set() and self.noFlowEvent.is_set():
                         print('''startupEvent value: %s, posting ''' % (self.startupEvent.value()))        
-                        self.shutoffEvent.set(self.shutoffDataReturn)
+                        self.shutOffEvent.set(self.shutoffDataReturn)
             if debug:
                 if self.noFlowEvent==None:
                     print('no finishEvent handle')
@@ -146,35 +213,6 @@ class flowMeter(object):
                 self.currentFlowEvent.clear()
             await asyncio.sleep_ms(300)
 
-class flowRunData(object):
-    """Class for create object to store Data"""
-    def __init__(self, clicks=450):
-        """init of data object"""
-        self.startTime = time.time()
-        self.endTime = 0
-        self.totalCount = 0
-        self.clicksToLiters = clicks
-
-        
-    def totalRunTime(self):
-        """Calulate Run Time"""
-        if self.endTime==0:
-            runtotal = time.time() - self.startTime
-        else:
-            runtotal = self.endTime - self.startTime
-        return runtotal
-    
-    
-    def totalFlow(self, Liters=True):
-        """Calculate total flow from total Clicks"""
-        flow = self.totalCount / self.clicksToLiters
-        if not Liters:
-            flow = flow * 0.264172 # convert liters to gallons
-        return flow
-    
-    def averageFlowRate(self):
-        """calculate average flow rate for the run"""
-        return (self.clicksToLiters/self.totalRunTime)/60
 
 def callbackflow(p, debug=False):
     """Add on to Counter """

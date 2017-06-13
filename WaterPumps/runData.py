@@ -1,14 +1,15 @@
 # Author: Harold Clark
 # Copyright Harold Clark 2017
 #
-
-class pumpRunData(object):
-    def __init__(self):
-        import time
-        self.start = time.time()
+from utime import time
+class runData(object):
+    def __init__(self, ID=1, Owner='undefined'):
+        self.ID = ID
+        self.Owner = Owner
+        self.start = time()
         self.finish = False
         self.maxPSI = False
-        self.pumpedTotal = False        
+        self.totalLiters = False        
         
     def totalRunTime(self):
         from utime import time

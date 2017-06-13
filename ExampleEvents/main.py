@@ -15,11 +15,14 @@ from WaterPumps.flowMeters import flowMeter
 from WaterPumps.flowMeters import callbackflow
 from WaterPumps.pumps import pump
 from WaterPumps.leds import triLed
+from WaterPumps.leds import LED_BLUE
+from WaterPumps.leds import LED_YELLOW
+from WaterPumps.leds import LED_GREEN
 from WaterPumps.buttons import button
 from WaterPumps.buttons import state
 from WaterPumps.servers import pumpServer
 from WaterPumps.validCommands import validCommand
-
+from WaterPumps.monitors import monitor
 import network
 
 logging.basicConfig(level=logging.DEBUG)
@@ -39,16 +42,19 @@ states = [state('pumpOff', event=mainPump.pumpOffEvent)]
 states.append(state('pumpOn', event=mainPump.pumpOnEvent))
 powerButton.states.setStates(states)
 
+#register pump events with flow meter
+mainFlowMeter.regi
 
 #register validCommandlists into mainServer
 mainServer.setvalidCommandList(mainPump.validCommandList())
 mainServer.appendvalidCommandlist(mainFlowMeter.validCommandList())
 
-#register led monitors 
+#register led monitors
+statusLed.registerMonitorEvent(monitor('name','event',statusLed.setColor, args={'color':}))
 #statusLed.registerLedClient(([(mainPump.pumpStartEvent.value, time.time)],statusLed.makeOrange,None,0))
-statusLed.registerLedClient(([(mainPump.pumpNotReadyEvent.is_set, True)],statusLed.setColor,statusLed.LED_YELLOW,None),0)
-statusLed.registerLedClient((([(mainPump.pumpNotReadyEvent.is_set, False), (mainPump.pumpRunningEvent.is_set, True)]),statusLed.setColor,statusLed.LED_GREEN,None),1)
-statusLed.registerLedClient(([(mainPump.pumpNotReadyEvent.is_set, False), (mainPump.pumpRunningEvent.is_set, False)],statusLed.setColor,statusLed.LED_BLUE,None),2)
+#statusLed.registerLedClient(([(mainPump.pumpNotReadyEvent.is_set, True)],statusLed.setColor,statusLed.LED_YELLOW,None),0)
+#statusLed.registerLedClient((([(mainPump.pumpNotReadyEvent.is_set, False), (mainPump.pumpRunningEvent.is_set, True)]),statusLed.setColor,statusLed.LED_GREEN,None),1)
+#statusLed.registerLedClient(([(mainPump.pumpNotReadyEvent.is_set, False), (mainPump.pumpRunningEvent.is_set, False)],statusLed.setColor,statusLed.LED_BLUE,None),2)
 
 #register callback for flowmeter
 mainFlowMeter.counterPin.irq(trigger=mainFlowMeter.counterPin.IRQ_RISING, handler=callbackflow)

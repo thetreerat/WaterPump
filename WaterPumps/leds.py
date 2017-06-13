@@ -8,7 +8,7 @@ except ImportError:
 from utime import time
 import machine
 from WaterPumps.events import Event
-
+from WaterPumps.monitors import monitor
 class led(object):
     def __init__(self,ledPin=0, name='Not Defined'):
         """Init a single color led object"""
@@ -56,6 +56,7 @@ class triLed(object):
         self.ledServerList  = []
         self._name = name
         self.flashEvent = Event()
+        self.monitorObjects = []
         if startColor==None:
             self.setStartColor(self.LED_OFF)
         else:
@@ -63,6 +64,11 @@ class triLed(object):
         
     def name(self):
         return self._name
+    
+    def registerMonitorEvent(self, monitor):
+        self.monitorObjects.append(monitor)
+        return 1
+    
     
     def setStartColor(self, color):
         R, B, G = color 
@@ -78,7 +84,19 @@ class triLed(object):
                 print(len(self.ledServerList))
                 print(self.ledServerList[-1])
 
-    
+
+    asyncio def monitorLED2(self, debug=False):
+        print('''%s - %s: monitorLED Started''' % (self.name(), time()))
+        mainLoop = asyncio.get_event_loop()
+        mainLoop.create_task(self.setColor(self.LED_BLUE))
+        while True:
+            for c in self.monitorObjects:
+                await asyncio.ms_sleep(50)
+                if c.event.is_set():
+                    self.launch(c)
+                    c.event.clear()
+            
+            
     async def monitorLED(self, debug=False):
         """coroutine for monitor event to change the LED color"""        
         print('''%s - %s: monitorLED Started''' % (self.name(), time()))
@@ -102,6 +120,7 @@ class triLed(object):
                         break
             await asyncio.sleep_ms(80)
             
+
     async def setColor(self, color):
         """set TriColor LED to pass color (RBG)"""
         R, B, G = color
@@ -120,3 +139,7 @@ class triLed(object):
             await asyncio.sleep_ms(100)
             self.setColor(self.LED_OFF)
             await asyncio.sleep_ms(100)
+
+
+    
+    
